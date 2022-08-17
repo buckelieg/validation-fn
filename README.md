@@ -20,8 +20,8 @@ Functional style validation for Java
 ```java
     Validator<Integer> validator = Validator.<Integer>notNull("Value must not be null")
                                            .then(Numbers::isNumber, "Value must be a number")
-                                           .then(Numbers::isNegative, "Value must not be negaative")
-                                           .then(Predicates.notIn(-20, -789, -1001), v -> String.format("Value of '%s' is not in the list of:  [-20, -789, -1001]", v));
+                                           .then(Numbers::isNegative, "Value must not be negative")
+                                           .then(Predicates.notIn(20, 789, 1001), v -> String.format("Value of '%s' is not in the list of:  [20, 789, 1001]", v));
 // then constructed validator is used to validate an arbitrary values:
 validator.validate(null); // throws first case
 validator.validate(8); // throws third case
@@ -33,7 +33,7 @@ validator.validate(8); // throws third case
 ```
 
 ### Prerequisites
-Java8, Maven, Appropriate JDBC driver.
+Java8, Maven.
 
 ## License
 This project licensed under Apache License, Version 2.0 - see the [LICENSE.md](LICENSE.md) file for details
