@@ -19,7 +19,6 @@ Functional style validation for Java
 
 ```java
     Validator<Integer> validator = Validator.<Integer>notNull("Value must not be null")
-                                           .then(Numbers::isNumber, "Value must be a number")
                                            .then(Numbers::isNegative, "Value must not be negative")
                                            .then(Predicates.notIn(20, 789, 1001), v -> String.format("Value of '%s' is not in the list of:  [20, 789, 1001]", v));
 // then constructed validator is used to validate an arbitrary values:
