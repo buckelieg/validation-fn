@@ -7,7 +7,7 @@ Functional style validation for Java
 
 ## Quick reference
 
-1) Add maven dependency:
+Add maven dependency:
 ```
 <dependency>
   <groupId>com.github.buckelieg</groupId>
@@ -18,12 +18,12 @@ Functional style validation for Java
 ### Simple validators
 
 ```java
-    Validator<Integer> validator = Validator.<Integer>notNull("Value must not be null")
-                                           .then(Numbers::isNegative, "Value must not be negative")
-                                           .then(Predicates.notIn(20, 789, 1001), v -> String.format("Value of '%s' is not in the list of:  [20, 789, 1001]", v));
+Validator<Integer> validator = Validator.<Integer>notNull("Value must not be null")
+                                        .then(Numbers::isNegative, "Value must not be negative")
+                                        .then(Predicates.notIn(20, 789, 1001), v -> String.format("Value of '%s' is not in the list of:  [20, 789, 1001]", v));
 // then constructed validator is used to validate an arbitrary values:
-validator.validate(null); // throws first case
-validator.validate(8); // throws third case
+validator.validate(null); // throws "Value must not be null"
+validator.validate(8); // throws "Value of '8' is not in the list of:  [20, 789, 1001]"
 ```
 
 ### Complex validators
@@ -35,5 +35,5 @@ validator.validate(8); // throws third case
 Java8, Maven.
 
 ## License
-This project licensed under Apache License, Version 2.0 - see the [LICENSE.md](LICENSE.md) file for details
+This project licensed under Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details
 
