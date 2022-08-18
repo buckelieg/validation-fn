@@ -24,20 +24,6 @@ import static buckelieg.validation.Predicates.*;
  */
 public final class Dates {
 
-
-    /**
-     * Checks if provided <code>value</code> is INSIDE the range of <code>from</code> and <code>to</code> date points
-     *
-     * @param value a validated value
-     * @param from  range start date
-     * @param to    range end date
-     * @param <T>   a value type
-     * @return true - if provided date is greater or equal to value of <code>from</code> AND less or equal to value of <code>to</code><br/>false - otherwise
-     */
-    public static <T extends Comparable<T>> boolean inside(T value, T from, T to) {
-        return ge(from, value) && le(to, value);
-    }
-
     /**
      * Returns a {@linkplain Predicate} that checks if provided <code>value</code> is INSIDE the range of <code>from</code> and <code>to</code> date points
      *
@@ -45,23 +31,9 @@ public final class Dates {
      * @param to   range end date
      * @param <T>  a value type
      * @return a {@linkplain Predicate} instance
-     * @see Dates#inside(Comparable, Comparable, Comparable)
      */
     public static <T extends Comparable<T>> Predicate<T> inside(T from, T to) {
-        return value -> inside(value, from, to);
-    }
-
-    /**
-     * Checks if provided <code>value</code> is STRICTLY INSIDE (not equal to range border) the range of <code>from</code> to <code>to</code> date points<br/>
-     *
-     * @param value a validated value
-     * @param from  range start date
-     * @param to    range end date
-     * @param <T>   a value type
-     * @return true - if provided value is greater than value of <code>from</code> AND less than value of <code>to</code><br/>false - otherwise
-     */
-    public static <T extends Comparable<T>> boolean insideStrict(T value, T from, T to) {
-        return gt(value, from) && lt(value, to);
+        return value -> ge(from).and(le(to)).test(value);
     }
 
     /**
@@ -73,7 +45,7 @@ public final class Dates {
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> insideStrict(T from, T to) {
-        return value -> insideStrict(value, from, to);
+        return value -> gt(from).and(lt(to)).test(value);
     }
 
 }

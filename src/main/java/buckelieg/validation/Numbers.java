@@ -18,8 +18,6 @@ package buckelieg.validation;
 import java.math.BigDecimal;
 import java.util.function.Predicate;
 
-import static buckelieg.validation.Predicates.*;
-
 /**
  * Utility class consisting of number-related predicates
  */
@@ -32,7 +30,6 @@ public final class Numbers {
     private static BigDecimal toBigDecimal(Object value) {
         return new BigDecimal(value.toString());
     }
-
 
     /**
      * A {@linkplain Predicate} that checks provided value to be a number
@@ -50,35 +47,13 @@ public final class Numbers {
     }
 
     /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Numbers#isNumber(Object)} method
-     *
-     * @param <N> value type
-     * @return a {@linkplain Predicate} instance
-     * @see Numbers#isNumber(Object)
-     */
-    public static <N extends Number & Comparable<N>> Predicate<N> isNumber() {
-        return Numbers::isNumber;
-    }
-
-    /**
      * Tests provided number whether it is equal to zero
      *
      * @param value a validated value
      * @return true - if provided value equals to zero, false - otherwise
      */
     public static <N extends Number & Comparable<N>> boolean isZero(N value) {
-        return eq(toBigDecimal(value), BigDecimal.ZERO);
-    }
-
-    /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Numbers#isZero(Number)} method
-     *
-     * @param <N> value type
-     * @return a {@linkplain Predicate} instance
-     * @see Numbers#isZero(Number)
-     */
-    public static <N extends Number & Comparable<N>> Predicate<N> isZero() {
-        return Numbers::isZero;
+        return BigDecimal.ZERO.compareTo(toBigDecimal(value)) == 0;
     }
 
     /**
@@ -89,17 +64,7 @@ public final class Numbers {
      * @return true - if provided value is stricly greater than zero, false - otherwise
      */
     public static <N extends Number & Comparable<N>> boolean isPositive(N value) {
-        return gt(toBigDecimal(value), BigDecimal.ZERO);
-    }
-
-    /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Numbers#isPositive(Number)} method
-     *
-     * @return a {@linkplain Predicate} instance
-     * @see Numbers#isPositive(Number)
-     */
-    public static <N extends Number & Comparable<N>> Predicate<N> isPositive() {
-        return Numbers::isPositive;
+        return BigDecimal.ZERO.compareTo(toBigDecimal(value)) < 0;
     }
 
     /**
@@ -110,18 +75,7 @@ public final class Numbers {
      * @return true - if provided number is strictly lesser than zero, false - otherwise
      */
     public static <N extends Number & Comparable<N>> boolean isNegative(N value) {
-        return lt(toBigDecimal(value), BigDecimal.ZERO);
-    }
-
-    /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Numbers#isNegative(Number)} method
-     *
-     * @param <N> value type
-     * @return a {@linkplain Predicate} instance
-     * @see Numbers#isNegative(Number)
-     */
-    public static <N extends Number & Comparable<N>> Predicate<N> isNegative() {
-        return Numbers::isNegative;
+        return BigDecimal.ZERO.compareTo(toBigDecimal(value)) > 0;
     }
 
 }

@@ -16,6 +16,7 @@
 package buckelieg.validation;
 
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -27,43 +28,125 @@ public final class Strings {
         throw new UnsupportedOperationException("No instances of Strings");
     }
 
-    public static boolean includesAll(String value, String... inclusions) {
-        return Stream.of(inclusions).allMatch(value::contains);
+    /**
+     * Taken from here: https://stackoverflow.com/a/47181151
+     */
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w-+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-zA-Z]{2,})$");
+
+    /**
+     * Returns a {@linkplain Predicate} that checks if validated value contains ALL of provided <code>values</code> as substrings<br/>
+     * This is case-sensitive predicate
+     *
+     * @param values a collection of values to be tested on
+     * @return a {@linkplain Predicate} instance
+     * @see String#contains(CharSequence)
+     */
+    public static Predicate<String> includesAll(String... values) {
+        return value -> Stream.of(values).allMatch(value::contains);
     }
 
-    public static Predicate<String> includesAll(String... inclusions) {
-        return value -> includesAll(value, inclusions);
-    }
-
-    public static boolean includesNone(String value, String... values) {
-        return !includesAll(value, values);
-    }
-
+    /**
+     * Returns a {@linkplain Predicate} that checks if validated value contains NONE of provided <code>values</code> as substrings<br/>
+     * This is case-sensitive predicate
+     *
+     * @param values a collection of values to be tested on
+     * @return a {@linkplain Predicate} instance
+     * @see String#contains(CharSequence)
+     */
     public static Predicate<String> includesNone(String... values) {
-        return value -> includesNone(value, values);
+        return value -> Stream.of(values).noneMatch(value::contains);
     }
 
-    public static boolean includesAny(String value, String... inclusions) {
-        return Stream.of(inclusions).anyMatch(value::contains);
+    /**
+     * Returns a {@linkplain Predicate} that checks if validated value contains AT LEAST ONE of provided <code>values</code> as its substring<br/>
+     * This is case-sensitive predicate
+     *
+     * @param values a collection of values to be tested on
+     * @return a {@linkplain Predicate} instance
+     * @see String#contains(CharSequence)
+     */
+    public static Predicate<String> includesAny(String... values) {
+        return value -> Stream.of(values).anyMatch(value::contains);
     }
 
-    public static Predicate<String> includesAny(String... inclusions) {
-        return value -> includesAny(value, inclusions);
-    }
-
+    /**
+     * Checks if provided value consist only of an UPPER cased characters
+     *
+     * @param value a validated value
+     * @return true - if provided value is an UPPER cased string<br/>false - otherwise
+     */
     public static boolean isUpper(String value) {
         return value.equals(value.toUpperCase());
     }
 
-    public static Predicate<String> isUpper() {
-        return Strings::isUpper;
-    }
-
+    /**
+     * Checks if provided value consist only of an LOWER cased characters
+     *
+     * @param value a validated value
+     * @return true - if provided value is an LOWER cased string<br/>false - otherwise
+     */
     public static boolean isLower(String value) {
         return value.equals(value.toLowerCase());
     }
 
-    public static Predicate<String> isLower() {
-        return Strings::isLower;
+    /**
+     * Returns a {@linkplain Predicate} that checks maximum length of provided value
+     *
+     * @param maxLength max length value
+     * @return a {@linkplain Predicate} instance
+     */
+    public static Predicate<String> maxLength(long maxLength) {
+        return value -> value.length() <= maxLength;
     }
+
+    /**
+     * Returns a {@linkplain Predicate} that checks minimum length of provided value
+     *
+     * @param minLength min kength value
+     * @return a {@linkplain Predicate} instance
+     */
+    public static Predicate<String> minLength(long minLength) {
+        return value -> value.length() >= minLength;
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} that checks if provided value mathes specific regular expression pattern
+     *
+     * @param pattern a regular expression
+     * @return a {@linkplain Predicate} instance
+     * @see String#matches(String)
+     */
+    public static Predicate<String> match(String pattern) {
+        return value -> value.matches(pattern);
+    }
+
+    /**
+     * Validates provided value to be an <code>e-mail</code>-formatted string:<br/>
+     * <pre>{@code
+     * "^[\\w-+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-zA-Z]{2,})$"
+     * }</pre>
+     *
+     * @param value a validated value
+     * @return true - if provided value matches an <code>e-mail</code> string<br/>false - otherwise
+     */
+    public static boolean isEmail(String value) {
+        return EMAIL_PATTERN.matcher(value).matches();
+    }
+
+    /**
+     * Pre-Java 11 implementation<br/>
+     * For Java 11 it is recommended to use a predicate from already available functionality:
+     * <pre>{@code
+     * var predicate = Predicates.<String>of(Objects::isNull).or(String::isBlank);
+     * }</pre>
+     *
+     * @param value a validated value
+     * @return true - if provided value is <code>null</code> OR length of the trimmed value is <code>0</code><br/>false - otherwise
+     * @see String#trim()
+     * @see String#isEmpty()
+     */
+    public static boolean isBlank(String value) {
+        return null == value || value.trim().isEmpty();
+    }
+
 }

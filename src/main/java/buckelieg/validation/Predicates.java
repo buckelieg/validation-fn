@@ -15,6 +15,7 @@
  */
 package buckelieg.validation;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -42,238 +43,126 @@ public final class Predicates {
         return requireNonNull(predicate, "Predicate must be provided");
     }
 
-
     /**
      * Checks if provided <code>value</code> is GREATER THAN the <code>measure</code> value
-     *
-     * @param value   a validated value
-     * @param measure a value the validated value is validated against
-     * @param <T>     a value type
-     * @return true - if provided <code>value</code> is greater than <code>measure</code><br/>false - otherwise
-     */
-    public static <T extends Comparable<T>> boolean gt(T value, T measure) {
-        return value.compareTo(measure) > 0;
-    }
-
-    /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Predicates#gt(Comparable, Comparable)} method
      *
      * @param measure a value the validated value is validated against
      * @param <T>     a value type
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> gt(T measure) {
-        return value -> gt(value, measure);
+        return value -> value.compareTo(measure) > 0;
     }
 
     /**
      * Checks if provided <code>value</code> is LESS THAN the <code>measure</code> value
-     *
-     * @param value   a validated value
-     * @param measure a value the validated value is validated against
-     * @param <T>     a value type
-     * @return true - if provided value is LESS THAN the <code>measure</code> one<br/>false - otherwise
-     */
-    public static <T extends Comparable<T>> boolean lt(T value, T measure) {
-        return value.compareTo(measure) < 0;
-    }
-
-    /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Predicates#lt(Comparable, Comparable)} method
      *
      * @param measure a value the validated value is validated against
      * @param <T>     a value type
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> lt(T measure) {
-        return value -> lt(value, measure);
+        return value -> value.compareTo(measure) < 0;
     }
 
     /**
      * Checks if provided <code>value</code> is EQUAL to the <code>measure</code> value
-     *
-     * @param value   a validated value
-     * @param measure a value the validated value is validated against
-     * @param <T>     a value type
-     * @return true - if provided value is EQUAL to the <code>measure</code> one<br/>false - otherwise
-     */
-    public static <T extends Comparable<T>> boolean eq(T value, T measure) {
-        return value.compareTo(measure) == 0;
-    }
-
-    /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Predicates#eq(Comparable, Comparable)} method
      *
      * @param measure a value the validated value is validated against
      * @param <T>     a value type
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> eq(T measure) {
-        return value -> eq(value, measure);
+        return value -> value.compareTo(measure) == 0;
     }
 
     /**
      * Checks if provided <code>value</code> is GREATER THAN OR EQUAL to the <code>measure</code> value
-     *
-     * @param value   a validated value
-     * @param measure a value the validated value is validated against
-     * @param <T>     a value type
-     * @return true - if provided value is GREATER OR EQUAL to the <code>measure</code> one<br/>false - otherwise
-     */
-    public static <T extends Comparable<T>> boolean ge(T value, T measure) {
-        return value.compareTo(measure) >= 0;
-    }
-
-    /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Predicates#ge(Comparable, Comparable)} method
      *
      * @param measure a value the validated value is validated against
      * @param <T>     a value type
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> ge(T measure) {
-        return value -> ge(value, measure);
+        return value -> value.compareTo(measure) >= 0;
     }
 
     /**
      * Checks if provided <code>value</code> is LESS THAN OR EQUAL to the <code>measure</code> value
-     *
-     * @param value   a validated value
-     * @param measure a value the validated value is validated against
-     * @param <T>     a value type
-     * @return true - if provided value is LESS OR EQUAL to the <code>measure</code> one<br/>false - otherwise
-     */
-    public static <T extends Comparable<T>> boolean le(T value, T measure) {
-        return value.compareTo(measure) <= 0;
-    }
-
-    /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Predicates#le(Comparable, Comparable)} method
      *
      * @param measure a value the validated value is validated against
      * @param <T>     a value type
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> le(T measure) {
-        return value -> le(value, measure);
+        return value -> value.compareTo(measure) <= 0;
     }
-
 
     /**
      * Checks if provided <code>value</code> is contained by a <code>filter</code> collection
      *
-     * @param value  a validated value
      * @param filter a collection of values to be validated value validated against
      * @param <T>    a value type
-     * @return true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
-     */
-    public static <T> boolean in(T value, Collection<T> filter) {
-        return in(value, filter.stream());
-    }
-
-    /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Predicates#in(Object, Collection)} method
-     *
-     * @param filter a collection of values to be validated value validated against
-     * @param <T>    a value type
-     * @return a {@linkplain Predicate} instance
-     * @see Predicates#in(Object, Collection)
+     * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
      */
     public static <T extends Comparable<T>> Predicate<T> in(Collection<T> filter) {
-        return value -> in(value, filter);
+        return filter::contains;
     }
 
     /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Predicates#in(Stream)} method
+     * Checks if provided <code>value</code> belongs to specified values
      *
      * @param filter a collection of values to be validated value validated against
      * @param <T>    a value type
-     * @return a {@linkplain Predicate} instance
+     * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
      */
     @SafeVarargs
     public static <T extends Comparable<T>> Predicate<T> in(T... filter) {
-        return value -> in(value, Stream.of(filter));
+        return value -> Arrays.asList(filter).contains(value);
     }
-
 
     /**
      * Checks if provided <code>value</code> is contained by <code>filter</code> {@linkplain Stream} of values
      *
-     * @param value  a validated value
      * @param filter a collection of values to be validated value validated against
      * @param <T>    a value type
-     * @return true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
-     */
-    public static <T> boolean in(T value, Stream<T> filter) {
-        return filter.anyMatch(value::equals);
-    }
-
-    /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Predicates#in(Object, Stream)} method
-     *
-     * @param filter a collection of values to be validated value validated against
-     * @param <T>    a value type
-     * @return a {@linkplain Predicate} instance
+     * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
      */
     public static <T extends Comparable<T>> Predicate<T> in(Stream<T> filter) {
-        return value -> in(value, filter);
+        return value -> filter.anyMatch(value::equals);
     }
 
     /**
-     * Checks if provided <code>value</code> is contained by <code>filter</code> {@linkplain Collection} of values
-     *
-     * @param value  a validated value
-     * @param filter a collection of values to be validated value validated against
-     * @param <T>    a value type
-     * @return true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
-     */
-    public static <T> boolean notIn(T value, Collection<T> filter) {
-        return notIn(value, filter.stream());
-    }
-
-    /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Predicates#in(Object, Collection)} method
+     * Checks if provided <code>value</code> is NOT contained by <code>filter</code> collection
      *
      * @param filter a collection of values to be validated value validated against
      * @param <T>    a value type
-     * @return a {@linkplain Predicate} instance
+     * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
      */
     public static <T extends Comparable<T>> Predicate<T> notIn(Collection<T> filter) {
-        return value -> notIn(value, filter);
+        return value -> filter.stream().noneMatch(value::equals);
     }
 
     /**
      * Checks if provided <code>value</code> is NOT contained by <code>filter</code> stream of values
      *
-     * @param value  a validated value
      * @param filter a collection of values to be validated value validated against
      * @param <T>    a value type
-     * @return true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
-     */
-    public static <T> boolean notIn(T value, Stream<T> filter) {
-        return filter.noneMatch(value::equals);
-    }
-
-    /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Predicates#notIn(Object, Stream)} method
-     *
-     * @param filter a collection of values to be validated value validated against
-     * @param <T>    a value type
-     * @return a {@linkplain Predicate} instance
+     * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
      */
     public static <T extends Comparable<T>> Predicate<T> notIn(Stream<T> filter) {
-        return value -> notIn(value, filter);
+        return value -> filter.noneMatch(value::equals);
     }
 
     /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Predicates#notIn(Object, Stream)} method
+     * Checks if provided <code>value</code> is NOT contained in provided values
      *
-     * @param filters a collection of values to be validated value validated against
-     * @param <T>     a value type
-     * @return a {@linkplain Predicate} instance
+     * @param filter a collection of values to be validated value validated against
+     * @param <T>    a value type
+     * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
      */
     @SafeVarargs
-    public static <T extends Comparable<T>> Predicate<T> notIn(T... filters) {
-        return value -> notIn(value, Stream.of(filters));
+    public static <T extends Comparable<T>> Predicate<T> notIn(T... filter) {
+        return value -> Stream.of(filter).noneMatch(value::equals);
     }
 }

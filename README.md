@@ -20,10 +20,10 @@ Add maven dependency:
 ```java
 Validator<Integer> validator = Validator.<Integer>notNull("Value must not be null")
                                         .then(Numbers::isNegative, "Value must not be negative")
-                                        .then(Predicates.notIn(20, 789, 1001), v -> String.format("Value of '%s' is not in the list of:  [20, 789, 1001]", v));
+                                        .then(Predicates.notIn(20, 789, 1001), v -> String.format("Value of '%s' must be one of:  [20, 789, 1001]", v));
 // then constructed validator is used to validate an arbitrary values:
-validator.validate(null); // throws "Value must not be null"
-validator.validate(8); // throws "Value of '8' is not in the list of:  [20, 789, 1001]"
+Integer value = validator.validate(null); // throws: "Value must not be null"
+int value = validator.validate(8); // throws: "Value of '8' must be one of:  [20, 789, 1001]"
 ```
 
 ### Complex validators

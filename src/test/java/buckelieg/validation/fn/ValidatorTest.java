@@ -15,6 +15,7 @@
  */
 package buckelieg.validation.fn;
 
+import buckelieg.validation.Numbers;
 import buckelieg.validation.Predicates;
 import buckelieg.validation.ValidationException;
 import org.junit.Assert;
@@ -60,6 +61,11 @@ public class ValidatorTest {
                         MyClass::getStringProperty,
                         Predicates.<String>of(Objects::isNull).or(String::isEmpty),
                         NULL_NOR_EMPTY
+                )
+                .thenMap(
+                        MyClass::getNumber,
+                        Numbers::isNegative,
+                        "Not negative"
                 );
         Assert.assertEquals(
                 NULL_NOR_EMPTY,

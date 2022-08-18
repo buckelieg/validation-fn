@@ -54,11 +54,11 @@ import static java.util.Objects.requireNonNull;
  *                          );
  *
  *  // case 1:
- *  validator.validate(new MyClass());
+ *  MyClass value = validator.validate(new MyClass());
  *  // will throw a ValidationException with user message of "stringProperty must not be null nor blank"
  *
  *  // case2:
- *  validator.validate(null);
+ *  MyClass value = validator.validate(null);
  *  // will throw a ValidationException with user message of "MyClass instance must be provided"
  *
  *  // Optional checks:
@@ -68,7 +68,7 @@ import static java.util.Objects.requireNonNull;
  *                              Predicates.<String>of(Objects::isNull).or(String::isBlank),
  *                              "stringProperty must not be null nor blank"
  *                           );
- *  validator.validate(null);
+ *  MyClass value = validator.validate(null);
  *  // this case will throw nothing since we passed null as an argument to validation function
  * }</pre>
  *
@@ -113,6 +113,7 @@ public interface Validator<T> {
             if (predicate.test(value)) {
                 throw new ValidationException(messageSupplier.apply(value));
             }
+            return value;
         };
     }
 
@@ -137,8 +138,7 @@ public interface Validator<T> {
      * @return a <code>Validator</code> instance
      */
     static <T> Validator<T> empty() {
-        return value -> {
-        };
+        return value -> value;
     }
 
     /**
@@ -213,9 +213,10 @@ public interface Validator<T> {
      * Validates provided value possibly throwing a {@linkplain ValidationException}
      *
      * @param value a validated value
+     * @return a validated value
      * @throws ValidationException in case of validation login fails
      */
-    void validate(T value) throws ValidationException;
+    T validate(T value) throws ValidationException;
 
     /**
      * Collects an error as an {@link Optional}<br/>
@@ -268,6 +269,7 @@ public interface Validator<T> {
             if (condition.test(value)) {
                 next.validate(value);
             }
+            return value;
         };
     }
 
@@ -359,7 +361,10 @@ public interface Validator<T> {
         requireNonNull(condition, "Condition predicate must be provided");
         requireNonNull(valueMapper, "Value mapping function must be provided");
         requireNonNull(next, "Mapped value validator must be provided");
-        return thenIf(condition, value -> next.validate(valueMapper.apply(value)));
+        return thenIf(condition, value -> {
+            next.validate(valueMapper.apply(value));
+            return value;
+        });
     }
 
     /**
