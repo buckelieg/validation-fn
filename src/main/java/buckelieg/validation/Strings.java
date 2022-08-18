@@ -41,7 +41,7 @@ public final class Strings {
      * @return a {@linkplain Predicate} instance
      * @see String#contains(CharSequence)
      */
-    public static Predicate<String> includesAll(String... values) {
+    public static Predicate<String> containsAll(String... values) {
         return value -> Stream.of(values).allMatch(value::contains);
     }
 
@@ -53,7 +53,7 @@ public final class Strings {
      * @return a {@linkplain Predicate} instance
      * @see String#contains(CharSequence)
      */
-    public static Predicate<String> includesNone(String... values) {
+    public static Predicate<String> containsNone(String... values) {
         return value -> Stream.of(values).noneMatch(value::contains);
     }
 
@@ -65,8 +65,32 @@ public final class Strings {
      * @return a {@linkplain Predicate} instance
      * @see String#contains(CharSequence)
      */
-    public static Predicate<String> includesAny(String... values) {
+    public static Predicate<String> containsAny(String... values) {
         return value -> Stream.of(values).anyMatch(value::contains);
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} that checks if validated value ENDS WITH provided <code>ending</code> string<br/>
+     * This is case-sensitive predicate
+     *
+     * @param ending a string value to te if this value is ended with
+     * @return a {@linkplain Predicate} instance
+     * @see String#endsWith(String)
+     */
+    public static Predicate<String> endsWith(String ending) {
+        return value -> value.endsWith(ending);
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} that checks if validated value STARTS WITH provided <code>starting</code> string<br/>
+     * This is case-sensitive predicate
+     *
+     * @param starting a string value to te if this value is started with
+     * @return a {@linkplain Predicate} instance
+     * @see String#startsWith(String)
+     */
+    public static Predicate<String> startWith(String starting) {
+        return value -> value.startsWith(starting);
     }
 
     /**
