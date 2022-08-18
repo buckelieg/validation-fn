@@ -39,7 +39,7 @@ public final class Numbers {
      */
     public static boolean isNumber(Object value) {
         try {
-            new BigDecimal(value.toString());
+            toBigDecimal(value);
             return true;
         } catch (NumberFormatException e) {
             return false;
