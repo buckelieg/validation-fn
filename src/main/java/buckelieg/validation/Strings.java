@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * Utility class consisting of string-related predicates
+ * A collection of string-related predicates
  */
 public final class Strings {
 
@@ -116,21 +116,21 @@ public final class Strings {
     /**
      * Returns a {@linkplain Predicate} that checks maximum length of provided value
      *
-     * @param maxLength max length value
+     * @param maxLength maximum length value
      * @return a {@linkplain Predicate} instance
      */
     public static Predicate<String> maxLength(long maxLength) {
-        return value -> value.length() <= maxLength;
+        return value -> value.length() >= maxLength;
     }
 
     /**
      * Returns a {@linkplain Predicate} that checks minimum length of provided value
      *
-     * @param minLength min kength value
+     * @param minLength minimum length value
      * @return a {@linkplain Predicate} instance
      */
     public static Predicate<String> minLength(long minLength) {
-        return value -> value.length() >= minLength;
+        return value -> value.length() <= minLength;
     }
 
     /**

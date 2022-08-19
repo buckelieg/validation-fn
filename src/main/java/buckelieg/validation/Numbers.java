@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 import java.util.function.Predicate;
 
 /**
- * Utility class consisting of number-related predicates
+ * A collection of number-related predicates
  */
 public final class Numbers {
 
@@ -60,7 +60,7 @@ public final class Numbers {
      * Tests provided number whether it is positive
      *
      * @param value a validated value
-     * @param <N>   value type
+     * @param <N>   a value type
      * @return true - if provided value is stricly greater than zero, false - otherwise
      */
     public static <N extends Number & Comparable<N>> boolean isPositive(N value) {
@@ -71,11 +71,29 @@ public final class Numbers {
      * Tests provided number whether it is negative
      *
      * @param value a validated value
-     * @param <N>   value type
+     * @param <N>   a value type
      * @return true - if provided number is strictly lesser than zero, false - otherwise
      */
     public static <N extends Number & Comparable<N>> boolean isNegative(N value) {
         return BigDecimal.ZERO.compareTo(toBigDecimal(value)) > 0;
+    }
+
+    /**
+     * @param minimum
+     * @param <N>     a value type
+     * @return
+     */
+    public static <N extends Number & Comparable<N>> Predicate<N> min(N minimum) {
+        return value -> value.compareTo(minimum) <= 0;
+    }
+
+    /**
+     * @param maximum
+     * @param <N>     a value type
+     * @return
+     */
+    public static <N extends Number & Comparable<N>> Predicate<N> max(N maximum) {
+        return value -> value.compareTo(maximum) >= 0;
     }
 
 }

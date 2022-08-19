@@ -18,7 +18,7 @@ Add maven dependency:
 ### Simple validators
 
 ```java
-Validator<Integer> validator = Validator.<Integer>notNull("Value must not be null")
+Validator<Integer> validator = Validators.<Integer>notNull("Value must not be null")
                                         .then(Numbers::isNegative, "Value must not be negative")
                                         .then(Predicates.notIn(20, 789, 1001), v -> String.format("Value of '%s' must be one of:  [20, 789, 1001]", v));
 // then constructed validator is used to validate an arbitrary values:

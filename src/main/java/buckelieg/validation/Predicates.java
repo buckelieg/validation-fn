@@ -165,4 +165,5 @@ public final class Predicates {
     public static <T extends Comparable<T>> Predicate<T> notIn(T... filter) {
         return value -> Stream.of(filter).noneMatch(value::equals);
     }
+
 }

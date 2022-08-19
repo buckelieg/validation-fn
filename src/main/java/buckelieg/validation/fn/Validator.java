@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
@@ -137,76 +136,8 @@ public interface Validator<T> {
      * @param <T> validated value type
      * @return a <code>Validator</code> instance
      */
-    static <T> Validator<T> empty() {
-        return value -> value;
-    }
-
-    /**
-     * Constructs a {@linkplain Validator} instance that tests value for not being null with error message supplier function
-     *
-     * @param messageSupplier an error message supplier function
-     * @param <T>             validated value type
-     * @return a <code>Validator</code> instance
-     * @throws NullPointerException if any argument is null
-     */
-    static <T> Validator<T> notNull(Supplier<String> messageSupplier) {
-        return ofPredicate(Objects::isNull, requireNonNull(messageSupplier, "Error message supplier must be provided").get());
-    }
-
-    /**
-     * Constructs a {@linkplain Validator} instance that tests value for not being null with provided error message
-     *
-     * @param errorMessage an error message
-     * @param <T>          validated value type
-     * @return a <code>Validator</code> instance
-     * @throws NullPointerException if any argument is null
-     */
-    static <T> Validator<T> notNull(String errorMessage) {
-        return notNull(() -> errorMessage);
-    }
-
-    /**
-     * Constructs a {@linkplain Validator} instance that tests value for nullness with default error message of: <code>Provided value must not be null</code>
-     *
-     * @param <T> validated value type
-     * @return a <code>Validator</code> instance
-     */
-    static <T> Validator<T> notNull() {
-        return notNull("Provided value must not be null");
-    }
-
-    /**
-     * Constructs a {@linkplain Validator} instance that tests value for nullness with error message supplier function
-     *
-     * @param messageSupplier an error message supplier function
-     * @param <T>             validated value type
-     * @return a <code>Validator</code> instance
-     * @throws NullPointerException if any argument is null
-     */
-    static <T> Validator<T> isNull(Supplier<String> messageSupplier) {
-        return ofPredicate(Objects::nonNull, requireNonNull(messageSupplier, "Error message supplier must be provided").get());
-    }
-
-    /**
-     * Constructs a {@linkplain Validator} instance that tests value for nullness with provided error message
-     *
-     * @param errorMessage an error message
-     * @param <T>          validated value type
-     * @return a <code>Validator</code> instance
-     * @throws NullPointerException if any argument is null
-     */
-    static <T> Validator<T> isNull(String errorMessage) {
-        return isNull(() -> errorMessage);
-    }
-
-    /**
-     * Constructs a {@linkplain Validator} instance that tests value for nullness with default error message of: <code>Provided value must be null</code>
-     *
-     * @param <T> validated value type
-     * @return a <code>Validator</code> instance
-     */
-    static <T> Validator<T> isNull() {
-        return isNull("Provided value must be null");
+    static <T> Validator<T> of() {
+        return of(value -> value);
     }
 
     /**
@@ -478,4 +409,5 @@ public interface Validator<T> {
     default <R> Validator<T> thenMapIfNotNull(Function<T, R> valueMapper, Predicate<R> predicate, String errorMessage) {
         return thenMapIfNotNull(valueMapper, predicate, value -> errorMessage);
     }
+
 }
