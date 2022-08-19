@@ -27,10 +27,125 @@ int value = validator.validate(8); // throws: "Value of '8' must be one of:  [20
 ```
 
 ### Complex validators
+Consider we have the next domain model:
 ```java
-// TODO
-```
+public class Address {
 
+    private String city;
+    private String street;
+    private long buildingNumber;
+
+    public Address(String city, String street, long buildingNumber) {
+        this.city = city;
+        this.street = street;
+        this.buildingNumber = buildingNumber;
+    }
+
+    public Address() {
+    }
+
+    // getters and setters are dropped for sanity
+}
+public class Person {
+
+    private String firstName;
+    private String secondName;
+    private String lastName;
+    private int age;
+    private List<Address> addresses;
+    private Optional<String> gender;
+
+    public Person(String firstName, String secondName, String lastName, int age, Address... addresses) {
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.lastName = lastName;
+        this.age = age;
+        this.addresses = Arrays.asList(addresses);
+    }
+
+    public Person() {
+    }
+    
+    // getters and setter are dropped for sanity
+}
+```
+User might have a couple of addresses (or might have one) and gender is optional to specify.
+This structure somehow brought to our service (e.g. in Data Transfer Object or smth)
+and it is needed to validated.
+Here we have some optional validation paths which must be executed only if corresponding data exists.
+Therefore if validated personn has no addrress - we skip those validation checks for address, but
+if some address is present - we must check it for correctness.
+Let's tale a look to a code which will show us how it would be done uing this library:
+```java
+// Our potential addresses
+Address address1 = new Address("MyCity", "MyStreet", 13);
+Address address2 = new Address();
+// test persons
+Person person1 = new Person("FirstName", "SecondName", "LastName", 76);
+Person person2 = new Person("FirstName", "SecondName", "LastName", 76, address1);
+Person person3 = new Person("FirstName", "SecondName", "LastName", 76, address1, address2);
+Person person4 = new Person("FirstName", "SecondName", "LastName", -76);
+Person person5 = new Person("First", "SecondName", "LastName", 76);
+```
+Ok, now we ready to write our validator for those test data:
+```java
+Validator<Person> validator = Validators.<Person>notNull("Person must be provided")
+                .thenMap( // unconditionally validating person object field of 'firstName'
+                        Person::getFirstName,
+                        Predicates.of(Strings::isBlank).or(Strings.minLength(6)), // validation case in the form of java.util.Predicate 
+                        value -> String.format("FirstName '%s' must not be null and at least 6 characters long", value) // error message provider function - the ValidationException message
+                )
+                .thenMap(
+                        Person::getSecondName, // validating person object field of 'secondName'
+                        Validator.<String>of().thenIf(
+                                Predicates.of(Strings::isBlank).negate(), // field validation condition
+                                Validator.ofPredicate( // construct validator from:
+                                        Strings.minLength(6), // validation test case predicate
+                                        "Minimum second name length is 6" // error message if predicate returns TRUE
+                                )
+                        )
+                )
+                .thenMap(Person::getLastName, Strings::isBlank, "Last name must not be empty") // unconditionally validating 'lastName'
+                .thenMap(
+                        Person::getAge, // validating 'age' field
+                        Predicates.<Integer>of(Numbers::isNegative).or(Numbers.max(100)), // combine predicates with arbitrary conditions to be validated against
+                        "Age has to be greater than 0 and less than 100" // an error message if we fail
+                )
+                .thenMap(
+                        Person::getAddresses, // walidating address collection
+                        Validators.eachOf(Validators.<Address>notNull("Address must not be null")
+                            .thenMap(Address::getCity, Strings::isBlank, "City must not be blank")
+                            .thenMap(Address::getStreet, Strings::isBlank, "Street must not be blank")
+                            .thenMap(Address::getBuildingNumber, Numbers::isNegative, "Build number must be positive")
+                        )
+                )
+                /**
+                 * We are free to implement our validators as we desire. For example if we want to validate address at one - we might write the validator like this:
+                 * 
+                 *.thenMap(Person::getAddresses, Validators.eachOf(Validators.<Address>notNull().then(
+                 *  addr -> Strings.isBlank(addr.getCity()) || Strings.isBlank(addr.getStreet()) || Numbers.isNegative(addr.getBuildingNumber()),
+                 *  "Address must be fully filled in"
+                 *)))
+                 * 
+                 */
+                .thenMap(
+                        Person::getGender, // field 'gender' is optional, so we validating it only if the value is present
+                        Validator.<Optional<String>>of().thenIfNotNull( // if optional object is not null - if it is - undegroing validation is not performed
+                            Validators.ifPresent( // construct predicate that validates on existing value
+                                    Strings::isBlank, // test redicate 
+                                    "Gender must not be blank" // error message
+                            )
+                        )
+                );
+```
+At this stage we are ready to validate our data:
+```java
+validator.validate(person1); // throws nothing
+validator.validate(person2); // throws nothing
+validator.validate(person3); // throws ValidationException with message of "City must not be blank" since the second address is not filled at all
+validator.validate(person4); // throws ValidationException with message of "Age has to be greater than 0 and less than 100" since age is -76
+validator.validate(person5); // throws ValidationException with message of "FirstName 'First' must not be null and at least 6 characters long" since it is 5 characters long
+```
 ### Prerequisites
 Java8, Maven.
 

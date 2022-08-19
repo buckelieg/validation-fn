@@ -16,11 +16,12 @@
 package buckelieg.validation.fn;
 
 import buckelieg.validation.*;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Objects;
 import java.util.Optional;
+
+import static org.junit.Assert.*;
 
 //TODO write more test cases here...
 public class ValidatorTest {
@@ -66,9 +67,9 @@ public class ValidatorTest {
                         Numbers::isNegative,
                         "Not negative"
                 );
-        Assert.assertEquals(
+        assertEquals(
                 NULL_NOR_EMPTY,
-                Assert.assertThrows(
+                assertThrows(
                         ValidationException.class,
                         () -> validator.validate(myClass)
                 ).getMessage()
@@ -77,11 +78,12 @@ public class ValidatorTest {
 
     @Test
     public void testNestedValidators() {
-        Address address = new Address("MyCity", "MyStreet", 13);
-        Person person = Validators.<Person>notNull("Person must be provided")
+        Address address1 = new Address("MyCity", "MyStreet", 13);
+        Address address2 = new Address();
+        Validator<Person> validator = Validators.<Person>notNull("Person must be provided")
                 .thenMap(
                         Person::getFirstName,
-                        Predicates.of(Strings::isBlank).and(Strings.minLength(6)),
+                        Predicates.of(Strings::isBlank).or(Strings.minLength(6)),
                         value -> String.format("FirstName '%s' must not be null and at least 6 characters long", value)
                 )
                 .thenMap(Person::getSecondName, Validator.<String>of().thenIf(
@@ -94,27 +96,50 @@ public class ValidatorTest {
                         Predicates.<Integer>of(Numbers::isNegative).or(Numbers.max(100)),
                         "Age has to be greater than 0 and less than 100"
                 )
-                .thenMap(Person::getAddress, Validator.<Address>of()
+                .thenMap(Person::getAddresses, Validators.eachOf(Validators.<Address>notNull("Address must not be null")
                         .thenMap(Address::getCity, Strings::isBlank, "City must not be blank")
                         .thenMap(Address::getStreet, Strings::isBlank, "Street must not be blank")
                         .thenMap(Address::getBuildingNumber, Numbers::isNegative, "Build number must be positive")
-                )
-                .thenMap(Person::getAddress, Validator.<Address>of().then(
+                ))
+                .thenMap(Person::getAddresses, Validators.eachOf(Validators.<Address>notNull().then(
                         addr -> Strings.isBlank(addr.getCity()) || Strings.isBlank(addr.getStreet()) || Numbers.isNegative(addr.getBuildingNumber()),
                         "Address must be fully filled in"
-                ))
-                .thenMap(
-                        Person::getNicknames,
-                        Validators.eachOf(Strings::isBlank, (val, col) -> "Nickname must bot be blank " + col)
-                )
-                .thenMapIfNotNull(
-                        Person::getGender,
-                        Validator.<Optional<String>>of()
-                                .thenIfNotNull(Validators.ifPresent(Strings::isBlank, ""))
-                )
-                .validate(
-                        new Person("FirstName", "SecondName", "LastName", 76, address, "1", "1")
-                );
-
+                )))
+                .thenMap(Person::getGender, Validator.<Optional<String>>of().thenIfNotNull(
+                        Validators.ifPresent(Strings::isBlank, "Gender must not be blank")
+                ));
+        Person person1 = new Person("FirstName", "SecondName", "LastName", 76);
+        Person person2 = new Person("FirstName", "SecondName", "LastName", 76, address1);
+        Person person3 = new Person("FirstName", "SecondName", "LastName", 76, address1, address2);
+        Person person4 = new Person("FirstName", "SecondName", "LastName", -76);
+        Person person5 = new Person("First", "SecondName", "LastName", 76);
+        Person person6 = new Person("FirstName", "", "LastName", 76);
+        Person person7 = new Person("FirstName", "sec", "LastName", 76);
+        Person person8 = new Person("FirstName", "Second", "", 76);
+        Person person9 = new Person("FirstName", "Second", "", 101);
+        Person person10 = new Person("FirstName", "Second", "", 10, (Address[]) null);
+        Person person11 = new Person();
+        Optional<ValidationException> outcome1 = validator.collect(person1);
+        Optional<ValidationException> outcome2 = validator.collect(person2);
+        Optional<ValidationException> outcome3 = validator.collect(person3);
+        Optional<ValidationException> outcome4 = validator.collect(person4);
+        Optional<ValidationException> outcome5 = validator.collect(person5);
+        Optional<ValidationException> outcome6 = validator.collect(person6);
+        Optional<ValidationException> outcome7 = validator.collect(person7);
+        Optional<ValidationException> outcome8 = validator.collect(person8);
+        Optional<ValidationException> outcome9 = validator.collect(person9);
+        Optional<ValidationException> outcome10 = validator.collect(person10);
+        Optional<ValidationException> outcome11 = validator.collect(person11);
+        assertFalse(outcome1.isPresent());
+        assertFalse(outcome2.isPresent());
+        assertTrue(outcome3.isPresent());
+        assertTrue(outcome4.isPresent());
+        assertTrue(outcome5.isPresent());
+        assertFalse(outcome6.isPresent());
+        assertTrue(outcome7.isPresent());
+        assertTrue(outcome8.isPresent());
+        assertTrue(outcome9.isPresent());
+        assertTrue(outcome10.isPresent());
+        assertTrue(outcome11.isPresent());
     }
 }

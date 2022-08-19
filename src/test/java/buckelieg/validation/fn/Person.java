@@ -25,20 +25,26 @@ public class Person {
     private String secondName;
     private String lastName;
     private int age;
-    private Address address;
+    private List<Address> addresses;
     private Optional<String> gender;
-    private List<String> nicknames;
 
-    public Person(String firstName, String secondName, String lastName, int age, Address address, String... nicknames) {
+    public Person(String firstName, String secondName, String lastName, int age, Address... addresses) {
         this.firstName = firstName;
         this.secondName = secondName;
         this.lastName = lastName;
         this.age = age;
-        this.address = address;
-        this.nicknames = Arrays.asList(nicknames);
+        this.addresses = null == addresses ? null : Arrays.asList(addresses);
     }
 
     public Person() {
+    }
+
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<Address> addresses) {
+        this.addresses = addresses;
     }
 
     public void setFirstName(String firstName) {
@@ -57,10 +63,6 @@ public class Person {
         this.age = age;
     }
 
-    public void setAddress(Address address) {
-        this.address = address;
-    }
-
     public String getFirstName() {
         return firstName;
     }
@@ -75,18 +77,6 @@ public class Person {
 
     public int getAge() {
         return age;
-    }
-
-    public Address getAddress() {
-        return address;
-    }
-
-    public List<String> getNicknames() {
-        return nicknames;
-    }
-
-    public void setNicknames(List<String> nicknames) {
-        this.nicknames = nicknames;
     }
 
     public Optional<String> getGender() {
