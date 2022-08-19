@@ -45,7 +45,7 @@ import static java.util.Objects.requireNonNull;
  *
  * // and it is needed some validation to be performed upon it...
  *
- * var validator = Validator.<MyClass>notNull("MyClass instance must be provided")
+ * var validator = Validators.<MyClass>notNull("MyClass instance must be provided")
  *                          .thenMap(
  *                              MyClass::getStringProperty,
  *                              Predicates.<String>of(Objects::isNull).or(String::isBlank),
@@ -61,7 +61,7 @@ import static java.util.Objects.requireNonNull;
  *  // will throw a ValidationException with user message of "MyClass instance must be provided"
  *
  *  // Optional checks:
- *  var validator = Validator.<MyClass>empty()
+ *  var validator = Validator.<MyClass>of()
  *                           .thenMapIfNotNull(
  *                              MyClass::getStringProperty,
  *                              Predicates.<String>of(Objects::isNull).or(String::isBlank),
@@ -86,6 +86,16 @@ public interface Validator<T> {
      */
     static <T> Validator<T> of(Validator<T> validator) {
         return requireNonNull(validator, "Validator must be provided");
+    }
+
+    /**
+     * Return an empty validator that does nothing. This is intended to be a start of any validation chain
+     *
+     * @param <T> validated value type
+     * @return a <code>Validator</code> instance
+     */
+    static <T> Validator<T> of() {
+        return of(value -> value);
     }
 
     /**
@@ -128,16 +138,6 @@ public interface Validator<T> {
      */
     static <T> Validator<T> ofPredicate(Predicate<T> predicate, String errorMessage) {
         return ofPredicate(predicate, value -> errorMessage);
-    }
-
-    /**
-     * Return an empty validator that does nothing. This is intended to be a start of any validation chain
-     *
-     * @param <T> validated value type
-     * @return a <code>Validator</code> instance
-     */
-    static <T> Validator<T> of() {
-        return of(value -> value);
     }
 
     /**

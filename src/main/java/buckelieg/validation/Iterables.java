@@ -36,8 +36,12 @@ public final class Iterables {
         return values -> toStream(values).count() == size;
     }
 
+    public static <E, I extends Iterable<E>> Predicate<I> notEmpty() {
+        return values -> values.iterator().hasNext();
+    }
+
     public static <E, I extends Iterable<E>> Predicate<I> isEmpty() {
-        return values -> null == values || !toStream(values).findAny().isPresent();
+        return values -> !values.iterator().hasNext();
     }
 
     public static <E, C extends Iterable<E>> Predicate<C> allOf(Predicate<E> predicate) {
