@@ -15,6 +15,7 @@
  */
 package buckelieg.validation;
 
+import java.util.Iterator;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -32,32 +33,84 @@ public final class Iterables {
         return StreamSupport.stream(iterable.spliterator(), false);
     }
 
+    /**
+     * Checks any collection of values to be exact of provided size
+     *
+     * @param size collection size to check
+     * @param <E>  a collection element type
+     * @param <I>  a collection type
+     * @return a {@linkplain Predicate} instance
+     * @see Stream#count()
+     */
     public static <E, I extends Iterable<E>> Predicate<I> sizeOf(long size) {
         return values -> toStream(values).count() == size;
     }
 
+    /**
+     * Checks if provided collection is not empty
+     *
+     * @param <E> a collection element type
+     * @param <I> a collection type
+     * @return a {@linkplain Predicate} instance
+     * @see Iterator#hasNext()
+     */
     public static <E, I extends Iterable<E>> Predicate<I> notEmpty() {
         return values -> values.iterator().hasNext();
     }
 
+    /**
+     * Checks if provided collection is empty
+     *
+     * @param <E> a collection element type
+     * @param <I> a collection type
+     * @return a {@linkplain Predicate} instance
+     * @see Iterator#hasNext()
+     */
     public static <E, I extends Iterable<E>> Predicate<I> isEmpty() {
         return values -> !values.iterator().hasNext();
     }
 
-    public static <E, C extends Iterable<E>> Predicate<C> allOf(Predicate<E> predicate) {
-        return values -> toStream(values).reduce(false, (acc, value) -> acc || predicate.test(value), (acc1, acc2) -> acc1 && acc2);
+    /**
+     * @param predicate a test condition as a {@linkplain Predicate}
+     * @param <E>       a collection element type
+     * @param <I>       a collection type
+     * @return a {@linkplain Predicate} instance
+     * @see Stream#allMatch(Predicate)
+     */
+    public static <E, I extends Iterable<E>> Predicate<I> allOf(Predicate<E> predicate) {
+        return values -> toStream(values).allMatch(predicate);
     }
 
-    public static <E, C extends Iterable<E>> Predicate<C> anyOf(Predicate<E> predicate) {
-        return values -> toStream(values).reduce(false, (acc, value) -> acc || predicate.test(value), (acc1, acc2) -> acc1 || acc2);
+    /**
+     * @param predicate a test condition as a {@linkplain Predicate}
+     * @param <E>       a collection element type
+     * @param <I>       a collection type
+     * @return a {@linkplain Predicate} instance
+     * @see Stream#anyMatch(Predicate)
+     */
+    public static <E, I extends Iterable<E>> Predicate<I> anyOf(Predicate<E> predicate) {
+        return values -> toStream(values).anyMatch(predicate);
     }
 
-    public static <E, C extends Iterable<E>> Predicate<C> noneOf(Predicate<E> predicate) {
-        return values -> toStream(values).reduce(true, (acc, value) -> acc || predicate.test(value), (acc1, acc2) -> acc1 && acc2);
+    /**
+     * @param predicate a test condition as a {@linkplain Predicate}
+     * @param <E>       a collection element type
+     * @param <I>       a collection type
+     * @return a {@linkplain Predicate} instance
+     * @see Stream#noneMatch(Predicate)
+     */
+    public static <E, I extends Iterable<E>> Predicate<I> noneOf(Predicate<E> predicate) {
+        return values -> toStream(values).noneMatch(predicate);
     }
 
-    public static <E, C extends Iterable<E>> Predicate<C> oneOf(Predicate<E> predicate) {
-        return values -> toStream(values).reduce(false, (acc, value) -> acc || predicate.test(value), (acc1, acc2) -> acc1 && acc2);
+    /**
+     * @param predicate a test condition as a {@linkplain Predicate}
+     * @param <E>       a collection element type
+     * @param <I>       a collection type
+     * @return a {@linkplain Predicate} instance
+     */
+    public static <E, I extends Iterable<E>> Predicate<I> oneOf(Predicate<E> predicate) {
+        return values -> toStream(values).filter(predicate).count() == 1;
     }
 
 }

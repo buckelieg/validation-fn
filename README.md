@@ -15,11 +15,12 @@ Add maven dependency:
   <version>0.1</version>
 </dependency>
 ```
+There no transitive dependencies
+
 ### Simple validators
 
 ```java
 Validator<Integer> validator = Validators.<Integer>notNull("Value must not be null")
-                                        .then(Numbers::isNegative, "Value must not be negative")
                                         .then(Predicates.notIn(20, 789, 1001), v -> String.format("Value of '%s' must be one of:  [20, 789, 1001]", v));
 // then constructed validator is used to validate an arbitrary values:
 Integer value = validator.validate(null); // throws: "Value must not be null"
@@ -60,7 +61,7 @@ public class Person {
         this.secondName = secondName;
         this.lastName = lastName;
         this.age = age;
-        this.addresses = Arrays.asList(addresses);
+        this.addresses = null == addresses ? null : Arrays.asList(addresses);
     }
 
     public Person() {
@@ -69,13 +70,12 @@ public class Person {
     // getters and setter are dropped for sanity
 }
 ```
-User might have a couple of addresses (or might have one) and gender is optional to specify.
-This structure somehow brought to our service (e.g. in Data Transfer Object or smth)
-and it is needed to validated.
+User might have a couple of addresses (or might have none) and gender is optional to specify.
+This structure somehow brought to our service (e.g. in Data Transfer Object or smth) and it is needed to validated.
 Here we have some optional validation paths which must be executed only if corresponding data exists.
-Therefore if validated personn has no addrress - we skip those validation checks for address, but
+Therefore, if validated person has no address - we skip those validation checks for address, but
 if some address is present - we must check it for correctness.
-Let's tale a look to a code which will show us how it would be done uing this library:
+Let's take a look to a code which will show us how it would be done using this library:
 ```java
 // Our potential addresses
 Address address1 = new Address("MyCity", "MyStreet", 13);
@@ -120,11 +120,11 @@ Validator<Person> validator = Validators.<Person>notNull("Person must be provide
                         )
                 )
                 /**
-                 * We are free to implement our validators as we desire. For example if we want to validate address at one - we might write the validator like this:
+                 * We are free to implement our validators as we desire. For example if we want to validate address at once - we might write the validator like this:
                  * 
                  *.thenMap(Person::getAddresses, Validators.eachOf(Validators.<Address>notNull().then(
                  *  addr -> Strings.isBlank(addr.getCity()) || Strings.isBlank(addr.getStreet()) || Numbers.isNegative(addr.getBuildingNumber()),
-                 *  "Address must be fully filled in"
+                 *  addr -> String.format("Address of '%s' must be fully filled in", addr) // if Address.toString() method is implemented fine we obtain reasonable error description
                  *)))
                  * 
                  */
@@ -146,6 +146,17 @@ validator.validate(person3); // throws ValidationException with message of "City
 validator.validate(person4); // throws ValidationException with message of "Age has to be greater than 0 and less than 100" since age is -76
 validator.validate(person5); // throws ValidationException with message of "FirstName 'First' must not be null and at least 6 characters long" since it is 5 characters long
 ```
+### Helper classes
+There are some helper classes that makes writing code shorter and easier, these are:
++ Validators - shortcut methods to use Validator
++ Predicates - generic purpose predicates
++ Iterables - predicate collection for iterables
++ Strings - predicate collection for strings
++ Dates - predicate collection for dates
++ Numbers - predicate collection for numbers
+
+These are subject to extension. 
+
 ### Prerequisites
 Java8, Maven.
 

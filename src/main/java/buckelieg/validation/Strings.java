@@ -89,7 +89,7 @@ public final class Strings {
      * @return a {@linkplain Predicate} instance
      * @see String#startsWith(String)
      */
-    public static Predicate<String> startWith(String starting) {
+    public static Predicate<String> startsWith(String starting) {
         return value -> value.startsWith(starting);
     }
 
@@ -140,7 +140,7 @@ public final class Strings {
      * @return a {@linkplain Predicate} instance
      * @see String#matches(String)
      */
-    public static Predicate<String> match(String pattern) {
+    public static Predicate<String> matches(String pattern) {
         return value -> value.matches(pattern);
     }
 

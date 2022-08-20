@@ -103,11 +103,10 @@ public class ValidatorTest {
                 ))
                 .thenMap(Person::getAddresses, Validators.eachOf(Validators.<Address>notNull().then(
                         addr -> Strings.isBlank(addr.getCity()) || Strings.isBlank(addr.getStreet()) || Numbers.isNegative(addr.getBuildingNumber()),
-                        "Address must be fully filled in"
+                        addr -> String.format("Address of '%s' must be fully filled in", addr)
                 )))
-                .thenMap(Person::getGender, Validator.<Optional<String>>of().thenIfNotNull(
-                        Validators.ifPresent(Strings::isBlank, "Gender must not be blank")
-                ));
+                .thenMap(Person::getGender, Validators.ifPresent(Strings::isBlank, "Gender must not be blank"));
+
         Person person1 = new Person("FirstName", "SecondName", "LastName", 76);
         Person person2 = new Person("FirstName", "SecondName", "LastName", 76, address1);
         Person person3 = new Person("FirstName", "SecondName", "LastName", 76, address1, address2);

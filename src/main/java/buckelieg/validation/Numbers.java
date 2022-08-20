@@ -79,18 +79,22 @@ public final class Numbers {
     }
 
     /**
-     * @param minimum
+     * Check provided number to be greater than provided <code>minimum</code>
+     *
+     * @param minimum a minimum allowed number
      * @param <N>     a value type
-     * @return
+     * @return a {@linkplain Predicate} instance
      */
     public static <N extends Number & Comparable<N>> Predicate<N> min(N minimum) {
         return value -> value.compareTo(minimum) <= 0;
     }
 
     /**
-     * @param maximum
+     * Check provided number to be less than provided <code>maximum</code>
+     *
+     * @param maximum a maximum allowed number
      * @param <N>     a value type
-     * @return
+     * @return a {@linkplain Predicate} instance
      */
     public static <N extends Number & Comparable<N>> Predicate<N> max(N maximum) {
         return value -> value.compareTo(maximum) >= 0;
