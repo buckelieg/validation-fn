@@ -21,6 +21,8 @@ import org.junit.Test;
 import java.util.Objects;
 import java.util.Optional;
 
+import static buckelieg.validation.Validators.*;
+import static buckelieg.validation.fn.Validator.ofPredicate;
 import static org.junit.Assert.*;
 
 //TODO write more test cases here...
@@ -83,29 +85,28 @@ public class ValidatorTest {
         Validator<Person> validator = Validators.<Person>notNull("Person must be provided")
                 .thenMap(
                         Person::getFirstName,
-                        Predicates.of(Strings::isBlank).or(Strings.minLength(6)),
+                        Strings.isBlank().or(Strings.minLength(6)),
                         value -> String.format("FirstName '%s' must not be null and at least 6 characters long", value)
                 )
-                .thenMap(Person::getSecondName, Validator.<String>of().thenIf(
-                        Predicates.of(Strings::isBlank).negate(),
-                        Validator.ofPredicate(Strings.minLength(6), "Minimum second name length is 6")
+                .thenMap(Person::getSecondName, ifNotNullAnd(Strings.notBlank(),
+                        ofPredicate(Strings.minLength(6), "Minimum second name length is 6")
                 ))
                 .thenMap(Person::getLastName, Strings::isBlank, "Last name must not be empty")
                 .thenMap(
                         Person::getAge,
-                        Predicates.<Integer>of(Numbers::isNegative).or(Numbers.max(100)),
+                        Numbers.<Integer>isNegative().or(Numbers.max(100)),
                         "Age has to be greater than 0 and less than 100"
                 )
-                .thenMap(Person::getAddresses, Validators.eachOf(Validators.<Address>notNull("Address must not be null")
+                .thenMap(Person::getAddresses, eachOf(Validators.<Address>notNull("Address must not be null")
                         .thenMap(Address::getCity, Strings::isBlank, "City must not be blank")
                         .thenMap(Address::getStreet, Strings::isBlank, "Street must not be blank")
                         .thenMap(Address::getBuildingNumber, Numbers::isNegative, "Build number must be positive")
                 ))
-                .thenMap(Person::getAddresses, Validators.eachOf(Validators.<Address>notNull().then(
+                .thenMap(Person::getAddresses, eachOf(Validators.<Address>notNull().then(
                         addr -> Strings.isBlank(addr.getCity()) || Strings.isBlank(addr.getStreet()) || Numbers.isNegative(addr.getBuildingNumber()),
                         addr -> String.format("Address of '%s' must be fully filled in", addr)
                 )))
-                .thenMap(Person::getGender, Validators.ifPresent(Strings::isBlank, "Gender must not be blank"));
+                .thenMap(Person::getGender, ifPresent(Strings::isBlank, "Gender must not be blank"));
 
         Person person1 = new Person("FirstName", "SecondName", "LastName", 76);
         Person person2 = new Person("FirstName", "SecondName", "LastName", 76, address1);

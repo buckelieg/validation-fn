@@ -31,7 +31,7 @@ public final class Strings {
     /**
      * Taken from here: https://stackoverflow.com/a/47181151
      */
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w-+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-zA-Z]{2,})$");
+    private static final Pattern PATTERN_EMAIL = Pattern.compile("^[\\w-+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-zA-Z]{2,})$");
 
     /**
      * Returns a {@linkplain Predicate} that checks if validated value contains ALL of provided <code>values</code> as substrings<br/>
@@ -154,7 +154,16 @@ public final class Strings {
      * @return true - if provided value matches an <code>e-mail</code> string<br/>false - otherwise
      */
     public static boolean isEmail(String value) {
-        return EMAIL_PATTERN.matcher(value).matches();
+        return PATTERN_EMAIL.matcher(value).matches();
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} wrapper for {@linkplain Strings#isEmail} (Number)} method
+     *
+     * @return a {@linkplain Predicate} instance
+     */
+    public static Predicate<String> isEmail() {
+        return Strings::isEmail;
     }
 
     /**
@@ -171,6 +180,24 @@ public final class Strings {
      */
     public static boolean isBlank(String value) {
         return null == value || value.trim().isEmpty();
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} wrapper for {@linkplain Strings#isBlank(String)} method
+     *
+     * @return a {@linkplain Predicate} instance
+     */
+    public static Predicate<String> isBlank() {
+        return Strings::isBlank;
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} wrapper for negated result of {@linkplain Strings#isBlank(String)} method
+     *
+     * @return a {@linkplain Predicate} instance
+     */
+    public static Predicate<String> notBlank() {
+        return value -> !isBlank(value);
     }
 
 }

@@ -47,6 +47,16 @@ public final class Numbers {
     }
 
     /**
+     * Returns a {@linkplain Predicate} wrapper for {@linkplain Numbers#isNumber(Object)} method
+     *
+     * @param <N> value type
+     * @return a {@linkplain Predicate} instance
+     */
+    public static <N extends Number & Comparable<N>> Predicate<N> isNumber() {
+        return Numbers::isNumber;
+    }
+
+    /**
      * Tests provided number whether it is equal to zero
      *
      * @param value a validated value
@@ -54,6 +64,16 @@ public final class Numbers {
      */
     public static <N extends Number & Comparable<N>> boolean isZero(N value) {
         return BigDecimal.ZERO.compareTo(toBigDecimal(value)) == 0;
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} wrapper for {@linkplain Numbers#isZero(Number)} method
+     *
+     * @param <N> value type
+     * @return a {@linkplain Predicate} instance
+     */
+    public static <N extends Number & Comparable<N>> Predicate<N> isZero() {
+        return Numbers::isZero;
     }
 
     /**
@@ -68,6 +88,16 @@ public final class Numbers {
     }
 
     /**
+     * Returns a {@linkplain Predicate} wrapper for {@linkplain Numbers#isPositive(Number)} method
+     *
+     * @param <N> value type
+     * @return a {@linkplain Predicate} instance
+     */
+    public static <N extends Number & Comparable<N>> Predicate<N> isPositive() {
+        return Numbers::isPositive;
+    }
+
+    /**
      * Tests provided number whether it is negative
      *
      * @param value a validated value
@@ -76,6 +106,16 @@ public final class Numbers {
      */
     public static <N extends Number & Comparable<N>> boolean isNegative(N value) {
         return BigDecimal.ZERO.compareTo(toBigDecimal(value)) > 0;
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} wrapper for {@linkplain Numbers#isNegative(Number)} method
+     *
+     * @param <N> value type
+     * @return a {@linkplain Predicate} instance
+     */
+    public static <N extends Number & Comparable<N>> Predicate<N> isNegative() {
+        return Numbers::isNegative;
     }
 
     /**
