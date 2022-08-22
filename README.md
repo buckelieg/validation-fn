@@ -130,8 +130,7 @@ Validator<Person> validator = Validators.<Person>notNull("Person must be provide
                  */
                 .thenMap(
                         Person::getGender, // field 'gender' is optional, so we validating it only if the value is present
-                        Validator.<Optional<String>>of().thenIfNotNull( // if optional object is not null - if it is - undegroing validation is not performed
-                            Validators.ifPresent( // construct predicate that validates on existing value
+                        Validators.ifPresent( // construct predicate that validates on existing value (i.e. optional object is not null and not empty) - if it is - undegroing validation is not performed
                                     Strings::isBlank, // test redicate 
                                     "Gender must not be blank" // error message
                             )
