@@ -44,7 +44,7 @@ public final class Dates {
      * @param <T>  a value type
      * @return a {@linkplain Predicate} instance
      */
-    public static <T extends Comparable<T>> Predicate<T> insideStrict(T from, T to) {
+    public static <T extends Comparable<T>> Predicate<T> strictInside(T from, T to) {
         return value -> gt(from).and(lt(to)).test(value);
     }
 

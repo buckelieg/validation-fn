@@ -71,6 +71,8 @@ public final class Iterables {
     }
 
     /**
+     * Checks if ALL elements of the collection satisfies provided predicate
+     *
      * @param predicate a test condition as a {@linkplain Predicate}
      * @param <E>       a collection element type
      * @param <I>       a collection type
@@ -82,6 +84,8 @@ public final class Iterables {
     }
 
     /**
+     * Checks if ANY elements of the collection satisfies provided predicate
+     *
      * @param predicate a test condition as a {@linkplain Predicate}
      * @param <E>       a collection element type
      * @param <I>       a collection type
@@ -93,6 +97,8 @@ public final class Iterables {
     }
 
     /**
+     * Checks if NONE of the collection elements satisfying provided predicate
+     *
      * @param predicate a test condition as a {@linkplain Predicate}
      * @param <E>       a collection element type
      * @param <I>       a collection type
@@ -104,6 +110,8 @@ public final class Iterables {
     }
 
     /**
+     * Checks if STRICTLY ONE element in the collection satisfying provided predicate
+     *
      * @param predicate a test condition as a {@linkplain Predicate}
      * @param <E>       a collection element type
      * @param <I>       a collection type

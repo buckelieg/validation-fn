@@ -70,6 +70,18 @@ public final class Strings {
     }
 
     /**
+     * Returns a {@linkplain Predicate} that checks if validated value contains STRICTLY ONE of provided <code>values</code> as its substring<br/>
+     * This is case-sensitive predicate
+     *
+     * @param values a collection of values to be tested on
+     * @return a {@linkplain Predicate} instance
+     * @see String#contains(CharSequence)
+     */
+    public static Predicate<String> containsOne(String... values) {
+        return value -> Stream.of(values).filter(value::contains).count() == 1;
+    }
+
+    /**
      * Returns a {@linkplain Predicate} that checks if validated value ENDS WITH provided <code>ending</code> string<br/>
      * This is case-sensitive predicate
      *

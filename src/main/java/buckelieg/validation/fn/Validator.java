@@ -20,6 +20,7 @@ import buckelieg.validation.ValidationException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -104,9 +105,10 @@ public interface Validator<T> {
      * The validator logic will be: whether predicate evaluates to <code>true</code> then {@linkplain ValidationException} will be thrown with message provided by <code>messageSupplier</code> function:<br/>
      * <pre>{@code
      * value -> {
-     *      if (predicate.test(value)) {
+     *     if (predicate.test(value)) {
      *          throw new ValidationException(messageSupplier.apply(value));
      *     }
+     *     return value;
      * }
      * }</pre>
      *
@@ -290,7 +292,6 @@ public interface Validator<T> {
      * @throws NullPointerException if any argument is null
      */
     default <R> Validator<T> thenMapIf(Predicate<T> condition, Function<T, R> valueMapper, Validator<R> next) {
-        requireNonNull(condition, "Condition predicate must be provided");
         requireNonNull(valueMapper, "Value mapping function must be provided");
         requireNonNull(next, "Mapped value validator must be provided");
         return thenIf(condition, value -> {
@@ -301,6 +302,156 @@ public interface Validator<T> {
 
     /**
      * Composes a new <code>Validator</code> which next validation step (that will be conditionally executed) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>notNull().thenMapIf(
+     *      value -> true, // execution condition
+     *      MyClass::getField1, // value mapper function
+     *      (mappedValue, myClassInstance) -> false, // bi-predicate that accepts mapped value and original object
+     *      (mappedValue, myClassInstance) -> "An error message" // bi-function that accepts mapped value and original object
+     * );
+     * }</pre>
+     *
+     * @param condition       a condition to be met to proceed with the next validation step
+     * @param valueMapper     validated value mapper
+     * @param predicate       validation test case
+     * @param messageSupplier an error message supplier function
+     * @param <R>             validated mapped value type
+     * @return a new composite <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    default <R> Validator<T> thenMapIf(Predicate<T> condition, Function<T, R> valueMapper, BiPredicate<R, T> predicate, BiFunction<R, T, String> messageSupplier) {
+        requireNonNull(valueMapper, "Value mapping function must be provided");
+        requireNonNull(predicate, "Predicate value validator must be provided");
+        requireNonNull(messageSupplier, "Message supplier must be provided");
+        return thenIf(condition, value -> {
+            R mappedValue = valueMapper.apply(value);
+            if (predicate.test(mappedValue, value)) {
+                throw new ValidationException(messageSupplier.apply(mappedValue, value));
+            }
+            return value;
+        });
+    }
+
+    /**
+     * Composes a new <code>Validator</code> which next validation step (that will be conditionally executed) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>notNull().thenMapIf(
+     *      value -> true, // execution condition
+     *      MyClass::getField1, // value mapper function
+     *      (mappedValue, myClassInstance) -> false, // bi-predicate that accepts mapped value and original object
+     *      mappedValue -> "An error message" // single-argument function with only mapped value
+     * );
+     * }</pre>
+     *
+     * @param condition       a condition to be met to proceed with the next validation step
+     * @param valueMapper     validated value mapper
+     * @param predicate       validation test case
+     * @param messageSupplier an error message supplier function
+     * @param <R>             validated mapped value type
+     * @return a new composite <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     * @see Validator#thenMap(Function, BiPredicate, BiFunction)
+     */
+    default <R> Validator<T> thenMapIf(Predicate<T> condition, Function<T, R> valueMapper, BiPredicate<R, T> predicate, Function<R, String> messageSupplier) {
+        requireNonNull(valueMapper, "Value mapping function must be provided");
+        requireNonNull(predicate, "Predicate value validator must be provided");
+        requireNonNull(messageSupplier, "Message supplier must be provided");
+        return thenIf(condition, value -> {
+            ofPredicate(v -> predicate.test(v, value), messageSupplier).validate(valueMapper.apply(value));
+            return value;
+        });
+    }
+
+    /**
+     * Composes a new <code>Validator</code> which next validation step (that will be conditionally executed) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>notNull().thenMapIf(
+     *      value -> true, // execution condition
+     *      MyClass::getField1, // value mapper function
+     *      (mappedValue, myClassInstance) -> false, // bi-predicate that accepts mapped value and original object
+     *      "An error message" // direct error message
+     * );
+     * }</pre>
+     *
+     * @param condition    a condition to be met to proceed with the next validation step
+     * @param valueMapper  validated value mapper
+     * @param predicate    validation test case
+     * @param errorMessage an error message
+     * @param <R>          validated mapped value type
+     * @return a new composite <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    default <R> Validator<T> thenMapIf(Predicate<T> condition, Function<T, R> valueMapper, BiPredicate<R, T> predicate, String errorMessage) {
+        return thenMapIf(condition, valueMapper, predicate, value -> errorMessage);
+    }
+
+    /**
+     * Composes a new <code>Validator</code> which next validation step (that will be conditionally executed) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>notNull().thenMapIf(
+     *      value -> true, // execution condition
+     *      MyClass::getField1, // value mapper function
+     *      mappedValue -> false, // single-argument predicate with only mapped value
+     *      (mappedValue, myClassInstance) -> "An error message" // bi-function that accepts mapped value and original object
+     * );
+     * }</pre>
+     *
+     * @param condition       a condition to be met to proceed with the next validation step
+     * @param valueMapper     validated value mapper
+     * @param predicate       validation test case
+     * @param messageSupplier an error message supplier function that accepts old value and mapped one
+     * @param <R>             validated mapped value type
+     * @return a new composite <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    default <R> Validator<T> thenMapIf(Predicate<T> condition, Function<T, R> valueMapper, Predicate<R> predicate, BiFunction<R, T, String> messageSupplier) {
+        requireNonNull(valueMapper, "Value mapping function must be provided");
+        requireNonNull(predicate, "Mapped value predicate must be provided");
+        requireNonNull(messageSupplier, "Error message supplier function must be provided");
+        return thenIf(condition, value -> {
+            R mappedValue = valueMapper.apply(value);
+            if (predicate.test(mappedValue)) {
+                throw new ValidationException(messageSupplier.apply(mappedValue, value));
+            }
+            return value;
+        });
+    }
+
+    /**
+     * Composes a new <code>Validator</code> which next validation step (that will be conditionally executed) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>notNull().thenMapIf(
+     *      value -> true, // execution condition
+     *      MyClass::getField1, // value mapper function
+     *      mappedValue -> false, // single-argument predicate with only mapped value
+     *      mappedValue -> "An error message" // single-argument function that accepts mapped value only
+     * );
+     * }</pre>
      *
      * @param condition       a condition to be met to proceed with the next validation step
      * @param valueMapper     validated value mapper
@@ -316,30 +467,19 @@ public interface Validator<T> {
 
     /**
      * Composes a new <code>Validator</code> which next validation step (that will be conditionally executed) will operate on the mapped value
-     *
-     * @param condition       a condition to be met to proceed with the next validation step
-     * @param valueMapper     validated value mapper
-     * @param predicate       validation test case
-     * @param messageSupplier an error message supplier function that accepts old value and mapped one
-     * @param <R>             validated mapped value type
-     * @return a new composite <code>Validator</code> instance
-     * @throws NullPointerException if any argument is null
-     */
-    default <R> Validator<T> thenMapIf(Predicate<T> condition, Function<T, R> valueMapper, Predicate<R> predicate, BiFunction<R, T, String> messageSupplier) {
-        requireNonNull(condition, "Condition predicate must be provided");
-        requireNonNull(valueMapper, "Value mapping function must be provided");
-        requireNonNull(predicate, "Mapped value predicate must be provided");
-        requireNonNull(messageSupplier, "Error message supplier function must be provided");
-        return thenIf(condition, oldValue -> {
-            R newValue = valueMapper.apply(oldValue);
-            Validator<R> validator = ofPredicate(predicate, value -> messageSupplier.apply(value, oldValue));
-            validator.validate(newValue);
-            return oldValue;
-        });
-    }
-
-    /**
-     * Composes a new <code>Validator</code> which next validation step (that will be conditionally executed) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>notNull().thenMapIf(
+     *      value -> true, // execution condition
+     *      MyClass::getField1, // value mapper function
+     *      mappedValue -> false, // single-argument predicate with only mapped value
+     *      "An error message" // direct error message
+     * );
+     * }</pre>
      *
      * @param condition    a condition to be met to proceed with the next validation step
      * @param valueMapper  validated value mapper
@@ -368,6 +508,44 @@ public interface Validator<T> {
 
     /**
      * Composes a new <code>Validator</code> which next validation step (that will always be executed) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>notNull().thenMap(
+     *      MyClass::getField1, // value mapper function
+     *      (mappedValue, myClassInstance) -> false, // bi-predicate that accepts mapped value and original object
+     *      (mappedValue, myClassInstance) -> "An error message" // bi-function that accepts mapped value and original object
+     * );
+     * }</pre>
+     *
+     * @param valueMapper     validated value mapper function
+     * @param predicate       validation test case
+     * @param messageSupplier an error message supplier function that accepts old value and mapped one
+     * @param <R>             validated mapped value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    default <R> Validator<T> thenMap(Function<T, R> valueMapper, BiPredicate<R, T> predicate, BiFunction<R, T, String> messageSupplier) {
+        return thenMapIf(value -> true, valueMapper, predicate, messageSupplier);
+    }
+
+    /**
+     * Composes a new <code>Validator</code> which next validation step (that will always be executed) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>notNull().thenMap(
+     *      MyClass::getField1, // value mapper function
+     *      (mappedValue, myClassInstance) -> false, // bi-predicate that accepts mapped value and original object
+     *      mappedValue -> "An error message" // single-argument function with only mapped value
+     * );
+     * }</pre>
      *
      * @param valueMapper     validated value mapper function
      * @param predicate       validation test case
@@ -376,12 +554,50 @@ public interface Validator<T> {
      * @return a <code>Validator</code> instance
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMap(Function<T, R> valueMapper, Predicate<R> predicate, Function<R, String> messageSupplier) {
-        return thenMap(valueMapper, ofPredicate(predicate, messageSupplier));
+    default <R> Validator<T> thenMap(Function<T, R> valueMapper, BiPredicate<R, T> predicate, Function<R, String> messageSupplier) {
+        return thenMapIf(value -> true, valueMapper, predicate, messageSupplier);
     }
 
     /**
      * Composes a new <code>Validator</code> which next validation step (that will always be executed) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>notNull().thenMap(
+     *      MyClass::getField1, // value mapper function
+     *      (mappedValue, myClassInstance) -> false, // bi-predicate that accepts mapped value and original object
+     *      "An error message" // direct error message
+     * );
+     * }</pre>
+     *
+     * @param valueMapper  validated value mapper
+     * @param predicate    validation test case
+     * @param errorMessage an error message
+     * @param <R>          validated mapped value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    default <R> Validator<T> thenMap(Function<T, R> valueMapper, BiPredicate<R, T> predicate, String errorMessage) {
+        return thenMap(valueMapper, predicate, value -> errorMessage);
+    }
+
+    /**
+     * Composes a new <code>Validator</code> which next validation step (that will always be executed) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>notNull().thenMap(
+     *      MyClass::getField1, // value mapper function
+     *      mappedValue -> false, // single-argument predicate with only mapped value
+     *      (mappedValue, myClassInstance) -> "An error message" // bi-function that accepts mapped value and original object
+     * );
+     * }</pre>
      *
      * @param valueMapper     validated value mapper function
      * @param predicate       validation test case
@@ -396,6 +612,44 @@ public interface Validator<T> {
 
     /**
      * Composes a new <code>Validator</code> which next validation step (that will always be executed) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>notNull().thenMap(
+     *      MyClass::getField1, // value mapper function
+     *      mappedValue -> false, // single-argument predicate with only mapped value
+     *      mappedValue -> "An error message" // single-argument function that accepts mapped value only
+     * );
+     * }</pre>
+     *
+     * @param valueMapper     validated value mapper function
+     * @param predicate       validation test case
+     * @param messageSupplier an error message supplier function
+     * @param <R>             validated mapped value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    default <R> Validator<T> thenMap(Function<T, R> valueMapper, Predicate<R> predicate, Function<R, String> messageSupplier) {
+        return thenMap(valueMapper, ofPredicate(predicate, messageSupplier));
+    }
+
+    /**
+     * Composes a new <code>Validator</code> which next validation step (that will always be executed) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>notNull().thenMap(
+     *      MyClass::getField1, // value mapper function
+     *      mappedValue -> false, // single-argument predicate with only mapped value
+     *      "An error message" // direct error message
+     * );
+     * }</pre>
      *
      * @param valueMapper  validated value mapper
      * @param predicate    validation test case
@@ -423,6 +677,44 @@ public interface Validator<T> {
 
     /**
      * Composes a new <code>Validator</code> which next validation step (that will be executed if validated object is not <code>null</code>) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>of().thenMapIfNotNull(
+     *      MyClass::getField1, // value mapper function
+     *      (mappedValue, myClassInstance) -> false, // bi-predicate that accepts mapped value and original object
+     *      (mappedValue, myClassInstance) -> "An error message" // bi-function that accepts mapped value and original object
+     * );
+     * }</pre>
+     *
+     * @param valueMapper     validated value mapper
+     * @param predicate       validation test case
+     * @param messageSupplier an error message supplier function that accepts old value and mapped one
+     * @param <R>             validated mapped value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    default <R> Validator<T> thenMapIfNotNull(Function<T, R> valueMapper, BiPredicate<R, T> predicate, BiFunction<R, T, String> messageSupplier) {
+        return thenMapIf(Objects::nonNull, valueMapper, predicate, messageSupplier);
+    }
+
+    /**
+     * Composes a new <code>Validator</code> which next validation step (that will be executed if validated object is not <code>null</code>) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>of().thenMapIfNotNull(
+     *      MyClass::getField1, // value mapper function
+     *      (mappedValue, myClassInstance) -> false, // bi-predicate that accepts mapped value and original object
+     *      mappedValue -> "An error message" // single-argument function that accepts mapped value only
+     * );
+     * }</pre>
      *
      * @param valueMapper     validated value mapper
      * @param predicate       validation test case
@@ -431,12 +723,50 @@ public interface Validator<T> {
      * @return a <code>Validator</code> instance
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapIfNotNull(Function<T, R> valueMapper, Predicate<R> predicate, Function<R, String> messageSupplier) {
-        return thenMapIfNotNull(valueMapper, ofPredicate(predicate, messageSupplier));
+    default <R> Validator<T> thenMapIfNotNull(Function<T, R> valueMapper, BiPredicate<R, T> predicate, Function<R, String> messageSupplier) {
+        return thenMapIf(Objects::nonNull, valueMapper, predicate, messageSupplier);
     }
 
     /**
      * Composes a new <code>Validator</code> which next validation step (that will be executed if validated object is not <code>null</code>) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>of().thenMapIfNotNull(
+     *      MyClass::getField1, // value mapper function
+     *      (mappedValue, myClassInstance) -> false, // bi-predicate that accepts mapped value and original object
+     *      "An error message" // direct error message
+     * );
+     * }</pre>
+     *
+     * @param valueMapper  validated value mapper
+     * @param predicate    validation test case
+     * @param errorMessage an error message supplier function
+     * @param <R>          validated mapped value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    default <R> Validator<T> thenMapIfNotNull(Function<T, R> valueMapper, BiPredicate<R, T> predicate, String errorMessage) {
+        return thenMapIfNotNull(valueMapper, predicate, value -> errorMessage);
+    }
+
+    /**
+     * Composes a new <code>Validator</code> which next validation step (that will be executed if validated object is not <code>null</code>) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>of().thenMapIfNotNull(
+     *      MyClass::getField1, // value mapper function
+     *      mappedValue -> false, // single-argument predicate with only mapped value
+     *      (mappedValue, myClassInstance) -> "An error message" // bi-function that accepts mapped value and original object
+     * );
+     * }</pre>
      *
      * @param valueMapper     validated value mapper
      * @param predicate       validation test case
@@ -451,6 +781,44 @@ public interface Validator<T> {
 
     /**
      * Composes a new <code>Validator</code> which next validation step (that will be executed if validated object is not <code>null</code>) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>of().thenMapIfNotNull(
+     *      MyClass::getField1, // value mapper function
+     *      mappedValue -> false, // single-argument predicate with only mapped value
+     *      mappedValue -> "An error message" // single-argument function that accepts mapped value only
+     * );
+     * }</pre>
+     *
+     * @param valueMapper     validated value mapper
+     * @param predicate       mapped value validation test case
+     * @param messageSupplier an error message
+     * @param <R>             validated mapped value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    default <R> Validator<T> thenMapIfNotNull(Function<T, R> valueMapper, Predicate<R> predicate, Function<R, String> messageSupplier) {
+        return thenMapIf(Objects::nonNull, valueMapper, predicate, messageSupplier);
+    }
+
+    /**
+     * Composes a new <code>Validator</code> which next validation step (that will be executed if validated object is not <code>null</code>) will operate on the mapped value
+     * <pre>{@code
+     * class MyClass {
+     *     private String field1;
+     *     private Integer field2;
+     *     // getters/setters
+     * }
+     * Validators.<MyClass>of().thenMapIfNotNull(
+     *      MyClass::getField1, // value mapper function
+     *      mappedValue -> false, // single-argument predicate with only mapped value
+     *      "An error message" // direct error message
+     * );
+     * }</pre>
      *
      * @param valueMapper  validated value mapper
      * @param predicate    mapped value validation test case

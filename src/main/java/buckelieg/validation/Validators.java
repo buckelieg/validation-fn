@@ -166,11 +166,14 @@ public final class Validators {
      * @param validator a value validator
      * @param <T>       validated value type
      * @return a <code>Validator</code> instance
-     * @throws NullPointerException if <code>validator</code> is null
      */
     public static <T> Validator<Optional<T>> ifPresent(Validator<T> validator) {
-        requireNonNull(validator, "Validator must be provided");
-        return ifNotNullAnd(Optional::isPresent, map(Optional::get, validator));
+        return value -> {
+            if(null != value && value.isPresent()) {
+                validator.validate(value.get());
+            }
+            return value;
+        };
     }
 
     /**
@@ -240,74 +243,5 @@ public final class Validators {
      */
     public static <T> Validator<T> ifNotNullAnd(Predicate<T> condition, Predicate<T> predicate, String errorMessage) {
         return ifNotNullAnd(condition, predicate, value -> errorMessage);
-    }
-
-    /**
-     * Maps validator of element type <code>T</code> to element of type <code>R</code>
-     *
-     * @param valueMapper validated value mapper
-     * @param validator   mapped value validator
-     * @param <T>         original value type
-     * @param <R>         mapped value type
-     * @return a <code>Validator</code> instance
-     * @throws NullPointerException if any argument is null
-     */
-    public static <T, R> Validator<T> map(Function<T, R> valueMapper, Validator<R> validator) {
-        requireNonNull(valueMapper, "Value mapper must be provided");
-        requireNonNull(validator, "Validator must be provided");
-        return value -> {
-            validator.validate(valueMapper.apply(value));
-            return value;
-        };
-    }
-
-    /**
-     * Returns a new <code>Validator</code> instance based on provided things:<br/>
-     * 1) value mapping function - function that maps validated value<br/>
-     * 2) predicate - validation test case<br/>
-     * 3) message supplier function - accepts old value and mapped one
-     *
-     * @param valueMapper     validated value mapper function
-     * @param predicate       validation test case
-     * @param messageSupplier error message supplier function
-     * @param <T>             original value type
-     * @param <R>             mapped value type
-     * @return a <code>Validator</code> instance
-     * @throws NullPointerException if any argument is null
-     */
-    public static <T, R> Validator<T> map(Function<T, R> valueMapper, Predicate<R> predicate, BiFunction<R, T, String> messageSupplier) {
-        requireNonNull(valueMapper, "Value mapper must be provided");
-        requireNonNull(predicate, "Predicate must be provided");
-        requireNonNull(messageSupplier, "Error message supplier function must be provided");
-        return oldValue -> {
-            R newValue = valueMapper.apply(oldValue);
-            Validator<R> validator = ofPredicate(predicate, value -> messageSupplier.apply(value, oldValue));
-            validator.validate(newValue);
-            return oldValue;
-        };
-    }
-
-    /**
-     * @param valueMapper     validated value mapper function
-     * @param predicate       validation test case
-     * @param messageSupplier error message supplier function
-     * @param <T>             original value type
-     * @param <R>             mapped value type
-     * @return a <code>Validator</code> instance
-     */
-    public static <T, R> Validator<T> map(Function<T, R> valueMapper, Predicate<R> predicate, Function<R, String> messageSupplier) {
-        return map(valueMapper, ofPredicate(predicate, messageSupplier));
-    }
-
-    /**
-     * @param valueMapper  validated value mapper function
-     * @param predicate    validation test case
-     * @param errorMessage an error message
-     * @param <T>          original value type
-     * @param <R>          mapped value type
-     * @return a <code>Validator</code> instance
-     */
-    public static <T, R> Validator<T> map(Function<T, R> valueMapper, Predicate<R> predicate, String errorMessage) {
-        return map(valueMapper, ofPredicate(predicate, errorMessage));
     }
 }

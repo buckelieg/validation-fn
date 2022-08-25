@@ -18,6 +18,9 @@ package buckelieg.validation;
 import java.math.BigDecimal;
 import java.util.function.Predicate;
 
+import static buckelieg.validation.Predicates.gt;
+import static buckelieg.validation.Predicates.lt;
+
 /**
  * A collection of number-related predicates
  */
@@ -126,7 +129,7 @@ public final class Numbers {
      * @return a {@linkplain Predicate} instance
      */
     public static <N extends Number & Comparable<N>> Predicate<N> min(N minimum) {
-        return value -> value.compareTo(minimum) <= 0;
+        return lt(minimum);
     }
 
     /**
@@ -137,7 +140,7 @@ public final class Numbers {
      * @return a {@linkplain Predicate} instance
      */
     public static <N extends Number & Comparable<N>> Predicate<N> max(N maximum) {
-        return value -> value.compareTo(maximum) >= 0;
+        return gt(maximum);
     }
 
 }
