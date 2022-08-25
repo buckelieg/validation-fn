@@ -12,7 +12,7 @@ Add maven dependency:
 <dependency>
   <groupId>com.github.buckelieg</groupId>
   <artifactId>validation-fn</artifactId>
-  <version>0.1</version>
+  <version>0.2</version>
 </dependency>
 ```
 There no transitive dependencies
@@ -21,7 +21,7 @@ There no transitive dependencies
 
 ```java
 Validator<Integer> validator = Validators.<Integer>notNull("Value must not be null")
-                                        .then(Predicates.notIn(20, 789, 1001), v -> String.format("Value of '%s' must be one of:  [20, 789, 1001]", v));
+                                        .then(Predicates.<Integer>notIn(20, 789, 1001), v -> String.format("Value of '%s' must be one of:  [20, 789, 1001]", v));
 // then constructed validator is used to validate an arbitrary values:
 Integer value = validator.validate(null); // throws: "Value must not be null"
 int value = validator.validate(8); // throws: "Value of '8' must be one of:  [20, 789, 1001]"
