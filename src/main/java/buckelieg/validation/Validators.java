@@ -19,10 +19,7 @@ import buckelieg.validation.fn.Validator;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 import static buckelieg.validation.fn.Validator.ofPredicate;
 import static java.util.Objects.requireNonNull;
@@ -82,6 +79,27 @@ public final class Validators {
         requireNonNull(messageSupplier, "Error message supplier function must be provided");
         return values -> {
             Validator<T> validator = ofPredicate(predicate, value -> messageSupplier.apply(value, values));
+            for (T value : values) {
+                validator.validate(value);
+            }
+            return values;
+        };
+    }
+
+    /**
+     * Returns a validator for each element of provided collection based on provided predicate and error message supplier
+     *
+     * @param predicate       a validation test case
+     * @param messageSupplier an error message supplier function
+     * @param <T>             a collection element value type
+     * @param <I>             a collection type
+     * @return a <code>Validator</code> instance
+     */
+    public static <T, I extends Iterable<T>> Validator<I> eachOf(BiPredicate<T, I> predicate, BiFunction<T, I, String> messageSupplier) {
+        requireNonNull(predicate, "Predicate must be provided");
+        requireNonNull(messageSupplier, "Error message supplier function must be provided");
+        return values -> {
+            Validator<T> validator = ofPredicate(value -> predicate.test(value, values), value -> messageSupplier.apply(value, values));
             for (T value : values) {
                 validator.validate(value);
             }
@@ -167,13 +185,12 @@ public final class Validators {
      * @param <T>       validated value type
      * @return a <code>Validator</code> instance
      */
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public static <T> Validator<Optional<T>> ifPresent(Validator<T> validator) {
-        return value -> {
-            if(null != value && value.isPresent()) {
-                validator.validate(value.get());
-            }
+        return ifNotNullAnd(Optional::isPresent, value -> {
+            validator.validate(value.get());
             return value;
-        };
+        });
     }
 
     /**

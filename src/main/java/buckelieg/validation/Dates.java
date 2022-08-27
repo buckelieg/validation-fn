@@ -37,6 +37,18 @@ public final class Dates {
     }
 
     /**
+     * Returns a {@linkplain Predicate} that checks if provided <code>value</code> is OUTSIDE the range of <code>from</code> and <code>to</code> date points
+     *
+     * @param from range start date
+     * @param to   range end date
+     * @param <T>  a value type
+     * @return a {@linkplain Predicate} instance
+     */
+    public static <T extends Comparable<T>> Predicate<T> outside(T from, T to) {
+        return value -> lt(from).and(gt(to)).test(value);
+    }
+
+    /**
      * Returns a {@linkplain Predicate} that checks if provided <code>value</code> is STRICTLY INSIDE (not equal to range border) the range of <code>from</code> to <code>to</code> date points<br/>
      *
      * @param from range start date

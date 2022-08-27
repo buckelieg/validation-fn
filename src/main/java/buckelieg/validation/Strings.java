@@ -82,6 +82,17 @@ public final class Strings {
     }
 
     /**
+     * Tests whether value contains provided part
+     *
+     * @param part a part to test value is contained in
+     * @return a {@linkplain Predicate} instance
+     * @see String#contains(CharSequence)
+     */
+    public static Predicate<String> contains(String part) {
+        return value -> value.contains(part);
+    }
+
+    /**
      * Returns a {@linkplain Predicate} that checks if validated value ENDS WITH provided <code>ending</code> string<br/>
      * This is case-sensitive predicate
      *
@@ -212,4 +223,22 @@ public final class Strings {
         return value -> !isBlank(value);
     }
 
+    /**
+     * Checks if provided string consists only of numbers and characters
+     *
+     * @param value a validated value
+     * @return true - if provided string is an alphanumeric string<br/>false - otherwise
+     */
+    public static boolean isAlphanumeric(String value) {
+        return value.chars().allMatch(Character::isLetterOrDigit);
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} wrapper for negated result of {@linkplain Strings#isAlphanumeric(String)} method
+     *
+     * @return a {@linkplain Predicate} instance
+     */
+    public static Predicate<String> isAlphanumeric() {
+        return Strings::isAlphanumeric;
+    }
 }

@@ -110,6 +110,18 @@ public final class Iterables {
     }
 
     /**
+     * Checks if <code>count</code> of elements in the collection are satisfying provided predicate
+     *
+     * @param predicate a test condition as a {@linkplain Predicate}
+     * @param <E>       a collection element type
+     * @param <I>       a collection type
+     * @return a {@linkplain Predicate} instance
+     */
+    public static <E, I extends Iterable<E>> Predicate<I> countOf(Predicate<E> predicate, long count) {
+        return values -> toStream(values).filter(predicate).count() == count;
+    }
+
+    /**
      * Checks if STRICTLY ONE element in the collection satisfying provided predicate
      *
      * @param predicate a test condition as a {@linkplain Predicate}
@@ -118,7 +130,7 @@ public final class Iterables {
      * @return a {@linkplain Predicate} instance
      */
     public static <E, I extends Iterable<E>> Predicate<I> oneOf(Predicate<E> predicate) {
-        return values -> toStream(values).filter(predicate).count() == 1;
+        return countOf(predicate, 1);
     }
 
 }
