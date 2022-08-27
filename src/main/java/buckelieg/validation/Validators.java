@@ -61,8 +61,58 @@ public final class Validators {
      * @param <I>             a collection type
      * @return a <code>Validator</code> instance
      */
-    public static <T, I extends Iterable<T>> Validator<I> eachOf(Predicate<T> predicate, Function<T, String> messageSupplier) {
-        return eachOf(ofPredicate(predicate, messageSupplier));
+    public static <T, I extends Iterable<T>> Validator<I> eachOf(BiPredicate<T, I> predicate, BiFunction<T, I, String> messageSupplier) {
+        requireNonNull(predicate, "Predicate must be provided");
+        requireNonNull(messageSupplier, "Error message supplier function must be provided");
+        return values -> {
+            Validator<T> validator = ofPredicate(value -> predicate.test(value, values), value -> messageSupplier.apply(value, values));
+            for (T value : values) {
+                validator.validate(value);
+            }
+            return values;
+        };
+    }
+
+    /**
+     * Returns a validator for each element of provided collection based on provided predicate and error message supplier
+     *
+     * @param predicate       a validation test case
+     * @param messageSupplier an error message supplier function
+     * @param <T>             a collection element value type
+     * @param <I>             a collection type
+     * @return a <code>Validator</code> instance
+     */
+    public static <T, I extends Iterable<T>> Validator<I> eachOf(BiPredicate<T, I> predicate, Function<T, String> messageSupplier) {
+        requireNonNull(predicate, "Predicate must be provided");
+        requireNonNull(messageSupplier, "Error message supplier function must be provided");
+        return values -> {
+            Validator<T> validator = ofPredicate(value -> predicate.test(value, values), messageSupplier);
+            for (T value : values) {
+                validator.validate(value);
+            }
+            return values;
+        };
+    }
+
+    /**
+     * Returns a validator for each element of provided collection based on provided predicate and error message supplier
+     *
+     * @param predicate    a validation test case
+     * @param errorMessage an error message
+     * @param <T>          a collection element value type
+     * @param <I>          a collection type
+     * @return a <code>Validator</code> instance
+     */
+    public static <T, I extends Iterable<T>> Validator<I> eachOf(BiPredicate<T, I> predicate, String errorMessage) {
+        requireNonNull(predicate, "Predicate must be provided");
+        requireNonNull(errorMessage, "Error message supplier function must be provided");
+        return values -> {
+            Validator<T> validator = ofPredicate(value -> predicate.test(value, values), errorMessage);
+            for (T value : values) {
+                validator.validate(value);
+            }
+            return values;
+        };
     }
 
     /**
@@ -95,16 +145,21 @@ public final class Validators {
      * @param <I>             a collection type
      * @return a <code>Validator</code> instance
      */
-    public static <T, I extends Iterable<T>> Validator<I> eachOf(BiPredicate<T, I> predicate, BiFunction<T, I, String> messageSupplier) {
-        requireNonNull(predicate, "Predicate must be provided");
-        requireNonNull(messageSupplier, "Error message supplier function must be provided");
-        return values -> {
-            Validator<T> validator = ofPredicate(value -> predicate.test(value, values), value -> messageSupplier.apply(value, values));
-            for (T value : values) {
-                validator.validate(value);
-            }
-            return values;
-        };
+    public static <T, I extends Iterable<T>> Validator<I> eachOf(Predicate<T> predicate, Function<T, String> messageSupplier) {
+        return eachOf(ofPredicate(predicate, messageSupplier));
+    }
+
+    /**
+     * Returns a validator for each element of provided collection based on provided predicate and error message supplier
+     *
+     * @param predicate    a validation test case
+     * @param errorMessage an error message
+     * @param <T>          a collection element value type
+     * @param <I>          a collection type
+     * @return a <code>Validator</code> instance
+     */
+    public static <T, I extends Iterable<T>> Validator<I> eachOf(Predicate<T> predicate, String errorMessage) {
+        return eachOf(ofPredicate(predicate, errorMessage));
     }
 
     /**
