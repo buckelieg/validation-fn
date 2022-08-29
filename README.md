@@ -152,6 +152,7 @@ There are some helper classes that makes writing code shorter and easier, these 
 + Strings - predicate collection for strings
 + Dates - predicate collection for dates
 + Numbers - predicate collection for numbers
++ Maps - predicate collection related to maps
 
 These are subject to extension. 
 

@@ -20,9 +20,13 @@ import java.util.function.Predicate;
 import static buckelieg.validation.Predicates.*;
 
 /**
- * Utility class consisting of time-related predicates
+ * Utility class consisting of (date)time-related predicates
  */
 public final class Dates {
+
+    private Dates() {
+        throw new UnsupportedOperationException("No instances of Dates");
+    }
 
     /**
      * Returns a {@linkplain Predicate} that checks if provided <code>value</code> is INSIDE the range of <code>from</code> and <code>to</code> date points
@@ -33,7 +37,7 @@ public final class Dates {
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> inside(T from, T to) {
-        return value -> ge(from).and(le(to)).test(value);
+        return ge(from).and(le(to));
     }
 
     /**
@@ -45,7 +49,7 @@ public final class Dates {
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> outside(T from, T to) {
-        return value -> lt(from).and(gt(to)).test(value);
+        return lt(from).and(gt(to));
     }
 
     /**
@@ -57,7 +61,7 @@ public final class Dates {
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> strictInside(T from, T to) {
-        return value -> gt(from).and(lt(to)).test(value);
+        return gt(from).and(lt(to));
     }
 
 }

@@ -15,6 +15,7 @@
  */
 package buckelieg.validation;
 
+import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -46,6 +47,21 @@ public final class Strings {
     }
 
     /**
+     * Returns a {@linkplain Predicate} that checks if validated value contains ALL of provided <code>values</code> as substrings ignoring case<br/>
+     * This is case-insensitive predicate
+     *
+     * @param values a collection of values to be tested on
+     * @return a {@linkplain Predicate} instance
+     * @see String#contains(CharSequence)
+     */
+    public static Predicate<String> containsAllIgnoreCase(String... values) {
+        return value -> {
+            String lowerValue = value.toLowerCase();
+            return Stream.of(values).map(String::toLowerCase).allMatch(lowerValue::contains);
+        };
+    }
+
+    /**
      * Returns a {@linkplain Predicate} that checks if validated value contains NONE of provided <code>values</code> as substrings<br/>
      * This is case-sensitive predicate
      *
@@ -55,6 +71,21 @@ public final class Strings {
      */
     public static Predicate<String> containsNone(String... values) {
         return value -> Stream.of(values).noneMatch(value::contains);
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} that checks if validated value contains NONE of provided <code>values</code> as substrings ignoring case<br/>
+     * This is case-insensitive predicate
+     *
+     * @param values a collection of values to be tested on
+     * @return a {@linkplain Predicate} instance
+     * @see String#contains(CharSequence)
+     */
+    public static Predicate<String> containsNoneIgnoreCase(String... values) {
+        return value -> {
+            String lowerValue = value.toLowerCase();
+            return Stream.of(values).map(String::toLowerCase).noneMatch(lowerValue::contains);
+        };
     }
 
     /**
@@ -70,6 +101,21 @@ public final class Strings {
     }
 
     /**
+     * Returns a {@linkplain Predicate} that checks if validated value contains AT LEAST ONE of provided <code>values</code> as its substring ignoring case<br/>
+     * This is case-insensitive predicate
+     *
+     * @param values a collection of values to be tested on
+     * @return a {@linkplain Predicate} instance
+     * @see String#contains(CharSequence)
+     */
+    public static Predicate<String> containsAnyIgnoreCase(String... values) {
+        return value -> {
+            String lowerValue = value.toLowerCase();
+            return Stream.of(values).map(String::toLowerCase).anyMatch(lowerValue::contains);
+        };
+    }
+
+    /**
      * Returns a {@linkplain Predicate} that checks if validated value contains STRICTLY ONE of provided <code>values</code> as its substring<br/>
      * This is case-sensitive predicate
      *
@@ -82,6 +128,21 @@ public final class Strings {
     }
 
     /**
+     * Returns a {@linkplain Predicate} that checks if validated value contains STRICTLY ONE of provided <code>values</code> as its substring ignoring case<br/>
+     * This is case-insensitive predicate
+     *
+     * @param values a collection of values to be tested on
+     * @return a {@linkplain Predicate} instance
+     * @see String#contains(CharSequence)
+     */
+    public static Predicate<String> containsOneIgnoreCase(String... values) {
+        return value -> {
+            String lowerValue = value.toLowerCase();
+            return Stream.of(values).map(String::toLowerCase).filter(lowerValue::contains).count() == 1;
+        };
+    }
+
+    /**
      * Tests whether value contains provided part
      *
      * @param part a part to test value is contained in
@@ -90,6 +151,17 @@ public final class Strings {
      */
     public static Predicate<String> contains(String part) {
         return value -> value.contains(part);
+    }
+
+    /**
+     * Tests whether value contains provided part ignoring case
+     *
+     * @param part a part to test value is contained in
+     * @return a {@linkplain Predicate} instance
+     * @see String#contains(CharSequence)
+     */
+    public static Predicate<String> containsIgnoreCase(String part) {
+        return value -> value.toLowerCase().contains(part.toLowerCase());
     }
 
     /**
@@ -105,6 +177,18 @@ public final class Strings {
     }
 
     /**
+     * Returns a {@linkplain Predicate} that checks if validated value ENDS WITH provided <code>ending</code> string ignoring case<br/>
+     * This is case-insensitive predicate
+     *
+     * @param ending a string value to te if this value is ended with
+     * @return a {@linkplain Predicate} instance
+     * @see String#endsWith(String)
+     */
+    public static Predicate<String> endsWithIgnoreCase(String ending) {
+        return value -> value.toLowerCase().endsWith(ending.toLowerCase());
+    }
+
+    /**
      * Returns a {@linkplain Predicate} that checks if validated value STARTS WITH provided <code>starting</code> string<br/>
      * This is case-sensitive predicate
      *
@@ -114,6 +198,18 @@ public final class Strings {
      */
     public static Predicate<String> startsWith(String starting) {
         return value -> value.startsWith(starting);
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} that checks if validated value STARTS WITH provided <code>starting</code> string ignoring case<br/>
+     * This is case-insensitive predicate
+     *
+     * @param starting a string value to te if this value is started with
+     * @return a {@linkplain Predicate} instance
+     * @see String#startsWith(String)
+     */
+    public static Predicate<String> startsWithIgnoreCase(String starting) {
+        return value -> value.toLowerCase().startsWith(starting.toLowerCase());
     }
 
     /**
@@ -228,17 +324,68 @@ public final class Strings {
      *
      * @param value a validated value
      * @return true - if provided string is an alphanumeric string<br/>false - otherwise
+     * @see Character#isLetterOrDigit(char)
+     * @see Character#isLetterOrDigit(int)
      */
     public static boolean isAlphanumeric(String value) {
-        return value.chars().allMatch(Character::isLetterOrDigit);
+        return allCharactersMatch(value, Character::isLetterOrDigit);
     }
 
     /**
      * Returns a {@linkplain Predicate} wrapper for negated result of {@linkplain Strings#isAlphanumeric(String)} method
      *
      * @return a {@linkplain Predicate} instance
+     * @see Strings#isAlphanumeric(String)
      */
     public static Predicate<String> isAlphanumeric() {
         return Strings::isAlphanumeric;
+    }
+
+    /**
+     * Checks if provided string consists only of numbers
+     *
+     * @param value a validated value
+     * @return true - if provided string is a numeric string<br/>false - otherwise
+     * @see Character#isDigit(char)
+     * @see Character#isDigit(int)
+     */
+    public static boolean isNumeric(String value) {
+        return allCharactersMatch(value, Character::isDigit);
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} wrapper for negated result of {@linkplain Strings#isNumeric(String)} method
+     *
+     * @return a {@linkplain Predicate} instance
+     * @see Strings#isNumeric(String)
+     */
+    public static Predicate<String> isNumeric() {
+        return Strings::isNumeric;
+    }
+
+    /**
+     * Checks if provided string consists only of numbers
+     *
+     * @param value a validated value
+     * @return true - if provided string is a numeric string<br/>false - otherwise
+     * @see Character#isDefined(char)
+     * @see Character#isDefined(int)
+     */
+    public static boolean isUnicode(String value) {
+        return allCharactersMatch(value, Character::isDefined);
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} wrapper for negated result of {@linkplain Strings#isNumeric(String)} method
+     *
+     * @return a {@linkplain Predicate} instance
+     * @see Strings#isUnicode(String)
+     */
+    public static Predicate<String> isUnicode() {
+        return Strings::isUnicode;
+    }
+
+    private static boolean allCharactersMatch(String value, IntPredicate predicate) {
+        return value.chars().allMatch(predicate);
     }
 }
