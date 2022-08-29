@@ -253,7 +253,7 @@ public final class Strings {
     }
 
     /**
-     * Returns a {@linkplain Predicate} that checks if provided value mathes specific regular expression pattern
+     * Returns a {@linkplain Predicate} that checks if provided value matches specific regular expression pattern
      *
      * @param pattern a regular expression
      * @return a {@linkplain Predicate} instance
@@ -332,7 +332,7 @@ public final class Strings {
     }
 
     /**
-     * Returns a {@linkplain Predicate} wrapper for negated result of {@linkplain Strings#isAlphanumeric(String)} method
+     * Returns a {@linkplain Predicate} wrapper for {@linkplain Strings#isAlphanumeric(String)} method
      *
      * @return a {@linkplain Predicate} instance
      * @see Strings#isAlphanumeric(String)
@@ -354,7 +354,7 @@ public final class Strings {
     }
 
     /**
-     * Returns a {@linkplain Predicate} wrapper for negated result of {@linkplain Strings#isNumeric(String)} method
+     * Returns a {@linkplain Predicate} wrapper for {@linkplain Strings#isNumeric(String)} method
      *
      * @return a {@linkplain Predicate} instance
      * @see Strings#isNumeric(String)
@@ -376,13 +376,34 @@ public final class Strings {
     }
 
     /**
-     * Returns a {@linkplain Predicate} wrapper for negated result of {@linkplain Strings#isNumeric(String)} method
+     * Returns a {@linkplain Predicate} wrapper for {@linkplain Strings#isNumeric(String)} method
      *
      * @return a {@linkplain Predicate} instance
      * @see Strings#isUnicode(String)
      */
     public static Predicate<String> isUnicode() {
         return Strings::isUnicode;
+    }
+
+    /**
+     * Checks if provided string consists only of alphabetic symbols
+     *
+     * @param value a validated value
+     * @return true - if provided string is a alphabetic string<br/>false - otherwise
+     * @see Character#isAlphabetic(int)
+     */
+    public static boolean isAlphabetic(String value) {
+        return allCharactersMatch(value, Character::isAlphabetic);
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} wrapper for {@linkplain Strings#isAlphabetic(String)} method
+     *
+     * @return a {@linkplain Predicate} instance
+     * @see Strings#isUnicode(String)
+     */
+    public static Predicate<String> isAlphabetic() {
+        return Strings::isAlphabetic;
     }
 
     private static boolean allCharactersMatch(String value, IntPredicate predicate) {
