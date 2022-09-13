@@ -84,7 +84,7 @@ public final class Iterables {
     }
 
     /**
-     * Checks if ANY elements of the collection satisfies provided predicate
+     * Checks if ANY (one or more) elements of the collection satisfies provided predicate
      *
      * @param predicate a test condition as a {@linkplain Predicate}
      * @param <E>       a collection element type

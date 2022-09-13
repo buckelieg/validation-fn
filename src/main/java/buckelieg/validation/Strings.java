@@ -17,6 +17,7 @@ package buckelieg.validation;
 
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -33,6 +34,23 @@ public final class Strings {
      * Taken from here: https://stackoverflow.com/a/47181151
      */
     private static final Pattern PATTERN_EMAIL = Pattern.compile("^[\\w-+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-zA-Z]{2,})$");
+
+
+    /**
+     * @param enumeration an {@linkplain Enum}eration with checked values
+     * @param <T>         enumeration type
+     * @return true - if provided value is one of the elements of provided enum type<br/>false - otherwise
+     */
+    public static <T extends Enum<T>> Predicate<String> in(Class<T> enumeration) {
+        return value -> {
+            try {
+                Enum.valueOf(enumeration, value);
+            } catch (NullPointerException | IllegalArgumentException e) {
+                return false;
+            }
+            return true;
+        };
+    }
 
     /**
      * Returns a {@linkplain Predicate} that checks if validated value contains ALL of provided <code>values</code> as substrings<br/>
@@ -233,23 +251,23 @@ public final class Strings {
     }
 
     /**
-     * Returns a {@linkplain Predicate} that checks maximum length of provided value
+     * Returns a {@linkplain Predicate} that checks if length of value is GREATER THAN provided <code>measure</code>
      *
-     * @param maxLength maximum length value
+     * @param measure maximum length value
      * @return a {@linkplain Predicate} instance
      */
-    public static Predicate<String> maxLength(long maxLength) {
-        return value -> value.length() >= maxLength;
+    public static Predicate<String> isLengthGe(int measure) {
+        return isMeasuredAt(String::length, Predicates.ge(measure));
     }
 
     /**
      * Returns a {@linkplain Predicate} that checks minimum length of provided value
      *
-     * @param minLength minimum length value
+     * @param measure minimum length value
      * @return a {@linkplain Predicate} instance
      */
-    public static Predicate<String> minLength(long minLength) {
-        return value -> value.length() <= minLength;
+    public static Predicate<String> isLengthLe(int measure) {
+        return isMeasuredAt(String::length, Predicates.le(measure));
     }
 
     /**
@@ -311,12 +329,21 @@ public final class Strings {
     }
 
     /**
+     * @param value
+     * @return
+     * @see #isBlank(String)
+     */
+    public static boolean notBlank(String value) {
+        return !isBlank(value);
+    }
+
+    /**
      * Returns a {@linkplain Predicate} wrapper for negated result of {@linkplain Strings#isBlank(String)} method
      *
      * @return a {@linkplain Predicate} instance
      */
     public static Predicate<String> notBlank() {
-        return value -> !isBlank(value);
+        return Strings::notBlank;
     }
 
     /**
@@ -408,5 +435,9 @@ public final class Strings {
 
     private static boolean allCharactersMatch(String value, IntPredicate predicate) {
         return value.chars().allMatch(predicate);
+    }
+
+    private static Predicate<String> isMeasuredAt(ToIntFunction<String> toInt, Predicate<Integer> predicate) {
+        return value -> predicate.test(toInt.applyAsInt(value));
     }
 }

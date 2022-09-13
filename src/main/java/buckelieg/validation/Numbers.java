@@ -19,8 +19,6 @@ import java.math.BigDecimal;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static buckelieg.validation.Predicates.*;
-
 /**
  * A collection of number-related predicates
  */
@@ -132,7 +130,7 @@ public final class Numbers {
      * @return a {@linkplain Predicate} instance
      */
     public static <N extends Number & Comparable<N>> Predicate<N> min(N minimum) {
-        return lt(minimum);
+        return Predicates.lt(minimum);
     }
 
     /**
@@ -143,117 +141,117 @@ public final class Numbers {
      * @return a {@linkplain Predicate} instance
      */
     public static <N extends Number & Comparable<N>> Predicate<N> max(N maximum) {
-        return gt(maximum);
+        return Predicates.gt(maximum);
     }
 
     /**
      * Check if this {@linkplain BigDecimal} value scale is EQUAL TO provided number
      *
-     * @param scale a scale to compare to
+     * @param measure a scale to compare to
      * @return a {@linkplain Predicate} instance
      * @see BigDecimal#scale()
      */
-    public static Predicate<BigDecimal> isScaleEq(int scale) {
-        return isMeasuredAt(BigDecimal::scale, eq(scale));
+    public static Predicate<BigDecimal> isScaleEq(int measure) {
+        return isMeasuredAt(BigDecimal::scale, Predicates.eq(measure));
     }
 
     /**
      * Check if this {@linkplain BigDecimal} value scale is LESS THAN provided number
      *
-     * @param scale a scale to compare to
+     * @param measure a scale to compare to
      * @return a {@linkplain Predicate} instance
      * @see BigDecimal#scale()
      */
-    public static Predicate<BigDecimal> isScaleLt(int scale) {
-        return isMeasuredAt(BigDecimal::scale, lt(scale));
+    public static Predicate<BigDecimal> isScaleLt(int measure) {
+        return isMeasuredAt(BigDecimal::scale, Predicates.lt(measure));
     }
 
     /**
      * Check if this {@linkplain BigDecimal} value scale is LESS THAN OR EQUAL TO provided number
      *
-     * @param scale a scale to compare to
+     * @param measure a scale to compare to
      * @return a {@linkplain Predicate} instance
      * @see BigDecimal#scale()
      */
-    public static Predicate<BigDecimal> isScaleLe(int scale) {
-        return isMeasuredAt(BigDecimal::scale, le(scale));
+    public static Predicate<BigDecimal> isScaleLe(int measure) {
+        return isMeasuredAt(BigDecimal::scale, Predicates.le(measure));
     }
 
     /**
      * Check if this {@linkplain BigDecimal} value scale is GREATER THAN provided number
      *
-     * @param scale a scale to compare to
+     * @param measure a scale to compare to
      * @return a {@linkplain Predicate} instance
      * @see BigDecimal#scale()
      */
-    public static Predicate<BigDecimal> isScaleGt(int scale) {
-        return isMeasuredAt(BigDecimal::scale, gt(scale));
+    public static Predicate<BigDecimal> isScaleGt(int measure) {
+        return isMeasuredAt(BigDecimal::scale, Predicates.gt(measure));
     }
 
     /**
      * Check if this {@linkplain BigDecimal} value scale is GREATER THAN OR EQUAL TO provided number
      *
-     * @param scale a scale to compare to
+     * @param measure a scale to compare to
      * @return a {@linkplain Predicate} instance
      * @see BigDecimal#scale()
      */
-    public static Predicate<BigDecimal> isScaleGe(int scale) {
-        return isMeasuredAt(BigDecimal::scale, ge(scale));
+    public static Predicate<BigDecimal> isScaleGe(int measure) {
+        return isMeasuredAt(BigDecimal::scale, Predicates.ge(measure));
     }
 
     /**
      * Check if this {@linkplain BigDecimal} value precision is EQUAL TO provided number
      *
-     * @param precision a precision to compare to
+     * @param measure a precision to compare to
      * @return a {@linkplain Predicate} instance
      * @see BigDecimal#precision()
      */
-    public static Predicate<BigDecimal> isPrecisionEq(int precision) {
-        return isMeasuredAt(BigDecimal::precision, eq(precision));
+    public static Predicate<BigDecimal> isPrecisionEq(int measure) {
+        return isMeasuredAt(BigDecimal::precision, Predicates.eq(measure));
     }
 
     /**
      * Check if this {@linkplain BigDecimal} value precision is LESS THAN provided number
      *
-     * @param precision a precision to compare to
+     * @param measure a precision to compare to
      * @return a {@linkplain Predicate} instance
      * @see BigDecimal#precision()
      */
-    public static Predicate<BigDecimal> isPrecisionLt(int precision) {
-        return isMeasuredAt(BigDecimal::precision, lt(precision));
+    public static Predicate<BigDecimal> isPrecisionLt(int measure) {
+        return isMeasuredAt(BigDecimal::precision, Predicates.lt(measure));
     }
 
     /**
      * Check if this {@linkplain BigDecimal} value precision is LESS THAN OR EQUAL TO provided number
      *
-     * @param precision a precision to compare to
+     * @param measure a precision to compare to
      * @return a {@linkplain Predicate} instance
      * @see BigDecimal#precision()
      */
-    public static Predicate<BigDecimal> isPrecisionLe(int precision) {
-        return isMeasuredAt(BigDecimal::precision, le(precision));
+    public static Predicate<BigDecimal> isPrecisionLe(int measure) {
+        return isMeasuredAt(BigDecimal::precision, Predicates.le(measure));
     }
 
     /**
      * Check if this {@linkplain BigDecimal} value precision is GREATER THAN provided number
      *
-     * @param precision a precision to compare to
+     * @param measure a precision to compare to
      * @return a {@linkplain Predicate} instance
      * @see BigDecimal#precision()
      */
-    public static Predicate<BigDecimal> isPrecisionGt(int precision) {
-        return isMeasuredAt(BigDecimal::precision, gt(precision));
+    public static Predicate<BigDecimal> isPrecisionGt(int measure) {
+        return isMeasuredAt(BigDecimal::precision, Predicates.gt(measure));
     }
 
     /**
      * Check if this {@linkplain BigDecimal} value precision is GREATER THAN OR EQUAL TO provided number
      *
-     * @param precision a precision to compare to
+     * @param measure a precision to compare to
      * @return a {@linkplain Predicate} instance
      * @see BigDecimal#precision()
      */
-    public static Predicate<BigDecimal> isPrecisionGe(int precision) {
-        return isMeasuredAt(BigDecimal::precision, ge(precision));
+    public static Predicate<BigDecimal> isPrecisionGe(int measure) {
+        return isMeasuredAt(BigDecimal::precision, Predicates.ge(measure));
     }
 
     private static Predicate<BigDecimal> isMeasuredAt(Function<BigDecimal, Integer> mapper, Predicate<Integer> predicate) {

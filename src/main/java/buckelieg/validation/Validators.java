@@ -17,6 +17,7 @@ package buckelieg.validation;
 
 import buckelieg.validation.fn.Validator;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.*;
@@ -41,13 +42,12 @@ public final class Validators {
      * @param <T>       a collection element value type
      * @param <I>       a collection type
      * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
      */
     public static <T, I extends Iterable<T>> Validator<I> eachOf(Validator<T> validator) {
         requireNonNull(validator, "Validator must be provided");
         return values -> {
-            for (T value : values) {
-                validator.validate(value);
-            }
+            for (T value : values) validator.validate(value);
             return values;
         };
     }
@@ -60,15 +60,14 @@ public final class Validators {
      * @param <T>             a collection element value type
      * @param <I>             a collection type
      * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
      */
     public static <T, I extends Iterable<T>> Validator<I> eachOf(BiPredicate<T, I> predicate, BiFunction<T, I, String> messageSupplier) {
         requireNonNull(predicate, "Predicate must be provided");
         requireNonNull(messageSupplier, "Error message supplier function must be provided");
         return values -> {
             Validator<T> validator = ofPredicate(value -> predicate.test(value, values), value -> messageSupplier.apply(value, values));
-            for (T value : values) {
-                validator.validate(value);
-            }
+            for (T value : values) validator.validate(value);
             return values;
         };
     }
@@ -81,15 +80,14 @@ public final class Validators {
      * @param <T>             a collection element value type
      * @param <I>             a collection type
      * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
      */
     public static <T, I extends Iterable<T>> Validator<I> eachOf(BiPredicate<T, I> predicate, Function<T, String> messageSupplier) {
         requireNonNull(predicate, "Predicate must be provided");
         requireNonNull(messageSupplier, "Error message supplier function must be provided");
         return values -> {
             Validator<T> validator = ofPredicate(value -> predicate.test(value, values), messageSupplier);
-            for (T value : values) {
-                validator.validate(value);
-            }
+            for (T value : values) validator.validate(value);
             return values;
         };
     }
@@ -102,15 +100,14 @@ public final class Validators {
      * @param <T>          a collection element value type
      * @param <I>          a collection type
      * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
      */
     public static <T, I extends Iterable<T>> Validator<I> eachOf(BiPredicate<T, I> predicate, String errorMessage) {
         requireNonNull(predicate, "Predicate must be provided");
         requireNonNull(errorMessage, "Error message supplier function must be provided");
         return values -> {
             Validator<T> validator = ofPredicate(value -> predicate.test(value, values), errorMessage);
-            for (T value : values) {
-                validator.validate(value);
-            }
+            for (T value : values) validator.validate(value);
             return values;
         };
     }
@@ -123,15 +120,14 @@ public final class Validators {
      * @param <T>             a collection element value type
      * @param <I>             a collection type
      * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
      */
     public static <T, I extends Iterable<T>> Validator<I> eachOf(Predicate<T> predicate, BiFunction<T, I, String> messageSupplier) {
         requireNonNull(predicate, "Predicate must be provided");
         requireNonNull(messageSupplier, "Error message supplier function must be provided");
         return values -> {
             Validator<T> validator = ofPredicate(predicate, value -> messageSupplier.apply(value, values));
-            for (T value : values) {
-                validator.validate(value);
-            }
+            for (T value : values) validator.validate(value);
             return values;
         };
     }
@@ -144,6 +140,7 @@ public final class Validators {
      * @param <T>             a collection element value type
      * @param <I>             a collection type
      * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
      */
     public static <T, I extends Iterable<T>> Validator<I> eachOf(Predicate<T> predicate, Function<T, String> messageSupplier) {
         return eachOf(ofPredicate(predicate, messageSupplier));
@@ -157,6 +154,7 @@ public final class Validators {
      * @param <T>          a collection element value type
      * @param <I>          a collection type
      * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
      */
     public static <T, I extends Iterable<T>> Validator<I> eachOf(Predicate<T> predicate, String errorMessage) {
         return eachOf(ofPredicate(predicate, errorMessage));
@@ -279,14 +277,13 @@ public final class Validators {
      * @param validator a validator to be executed
      * @param <T>       validated value type
      * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
      */
     public static <T> Validator<T> ifNotNullAnd(Predicate<T> condition, Validator<T> validator) {
         requireNonNull(condition, "Condition predicate must be provided");
         requireNonNull(validator, "Validator must be provided");
         return value -> {
-            if (null != value && condition.test(value)) {
-                validator.validate(value);
-            }
+            if (null != value && condition.test(value)) validator.validate(value);
             return value;
         };
     }
@@ -299,6 +296,7 @@ public final class Validators {
      * @param messageSupplier error message supplier function
      * @param <T>             validated value type
      * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
      */
     public static <T> Validator<T> ifNotNullAnd(Predicate<T> condition, Predicate<T> predicate, Function<T, String> messageSupplier) {
         return ifNotNullAnd(condition, ofPredicate(predicate, messageSupplier));
@@ -312,8 +310,59 @@ public final class Validators {
      * @param errorMessage an error message
      * @param <T>          validated value type
      * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
      */
     public static <T> Validator<T> ifNotNullAnd(Predicate<T> condition, Predicate<T> predicate, String errorMessage) {
         return ifNotNullAnd(condition, predicate, value -> errorMessage);
+    }
+
+    /**
+     * @param key       a key which the value is contained under
+     * @param validator validator of value obtained via {@linkplain Map#get(Object)}
+     * @param <K>       key type
+     * @param <V>       value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    public static <K, V> Validator<Map<K, V>> keyValueOf(K key, Validator<V> validator) {
+        requireNonNull(key, "Key must be provided");
+        requireNonNull(validator, "Validator must be provided");
+        return map -> {
+            validator.validate(map.get(key));
+            return map;
+        };
+    }
+
+    /**
+     * @param validator validator of {@linkplain Map.Entry}
+     * @param <K>       key type
+     * @param <V>       value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if argument is null
+     */
+    public static <K, V> Validator<Map<K, V>> eachEntryOf(Validator<Map.Entry<K, V>> validator) {
+        requireNonNull(validator, "Validator must be provided");
+        return map -> {
+            map.entrySet().forEach(validator::validate);
+            return map;
+        };
+    }
+
+    /**
+     * @param key       a key which the value is contained under
+     * @param validator validator of value obtained via {@linkplain Map#get(Object)}
+     * @param <K>       key type
+     * @param <V>       value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    public static <K, V> Validator<Map<K, V>> ifKeyValueIsNotNull(K key, Validator<V> validator) {
+        requireNonNull(key, "Key must be provided");
+        requireNonNull(validator, "Validator must be provided");
+        return map -> {
+            V value = map.get(key);
+            if (null != value) validator.validate(value);
+            return map;
+        };
     }
 }

@@ -1,6 +1,7 @@
 package buckelieg.validation;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
@@ -60,6 +61,33 @@ public final class Maps {
      */
     public static <K, V> Predicate<Map<K, V>> sizeOf(int size) {
         return map -> map.size() == size;
+    }
+
+    /**
+     * Checks the value in the map under provided key against provided predicate
+     *
+     * @param key       a key the value is obtained by
+     * @param predicate value test predicate
+     * @param <K>       key type
+     * @param <V>       value type
+     * @return a {@linkplain Predicate} instance
+     */
+    public static <K, V> Predicate<Map<K, V>> keyValue(K key, Predicate<V> predicate) {
+        return map -> predicate.test(map.get(key));
+    }
+
+    /**
+     * Checks if the value in the map is equal to provided one by means of invoking {@linkplain Objects#equals(Object, Object)}
+     *
+     * @param key     a key the value is obtained by
+     * @param measure measure value
+     * @param <K>     key type
+     * @param <V>     value type
+     * @return a {@linkplain Predicate} instance
+     * @see Objects#equals(Object, Object)
+     */
+    public static <K, V> Predicate<Map<K, V>> keyValueEquals(K key, V measure) {
+        return map -> Objects.equals(measure, map.get(key));
     }
 
 }

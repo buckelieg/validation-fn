@@ -17,8 +17,6 @@ package buckelieg.validation;
 
 import java.util.function.Predicate;
 
-import static buckelieg.validation.Predicates.*;
-
 /**
  * Utility class consisting of (date)time-related predicates
  */
@@ -37,7 +35,7 @@ public final class Dates {
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> inside(T from, T to) {
-        return ge(from).and(le(to));
+        return Predicates.ge(from).and(Predicates.le(to));
     }
 
     /**
@@ -49,7 +47,7 @@ public final class Dates {
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> outside(T from, T to) {
-        return lt(from).and(gt(to));
+        return Predicates.lt(from).and(Predicates.gt(to));
     }
 
     /**
@@ -61,7 +59,7 @@ public final class Dates {
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> strictInside(T from, T to) {
-        return gt(from).and(lt(to));
+        return Predicates.gt(from).and(Predicates.lt(to));
     }
 
 }

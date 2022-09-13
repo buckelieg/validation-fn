@@ -57,23 +57,19 @@ public class ValidatorTest {
 
     @Test
     public void test() {
-        MyClass myClass = new MyClass("");
-        Validator<MyClass> validator = Validator.<MyClass>of()
+        Validator<MyClass> validator = Validator.build(noop -> noop
                 .thenMapIfNotNull(
                         MyClass::getStringProperty,
                         Predicates.<String>of(Objects::isNull).or(String::isEmpty),
                         NULL_NOR_EMPTY
                 )
-                .thenMap(
-                        MyClass::getNumber,
-                        Numbers::isNegative,
-                        "Not negative"
-                );
+                .thenMap(MyClass::getNumber, Numbers::isNegative, "Not negative")
+        );
         assertEquals(
                 NULL_NOR_EMPTY,
                 assertThrows(
                         ValidationException.class,
-                        () -> validator.validate(myClass)
+                        () -> validator.validate(new MyClass(""))
                 ).getMessage()
         );
     }
@@ -85,11 +81,11 @@ public class ValidatorTest {
         Validator<Person> validator = Validators.<Person>notNull("Person must be provided")
                 .thenMap(
                         Person::getFirstName,
-                        Strings.isBlank().or(Strings.minLength(6)),
+                        Strings.isBlank().or(Strings.isLengthLe(6)),
                         value -> String.format("FirstName '%s' must not be null and at least 6 characters long", value)
                 )
                 .thenMap(Person::getSecondName, ifNotNullAnd(Strings.notBlank(),
-                        ofPredicate(Strings.minLength(6), "Minimum second name length is 6")
+                        ofPredicate(Strings.isLengthLe(6), "Minimum second name length is 6")
                 ))
                 .thenMap(Person::getLastName, Strings::isBlank, "Last name must not be empty")
                 .thenMap(

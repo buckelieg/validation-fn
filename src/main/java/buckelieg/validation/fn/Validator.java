@@ -19,10 +19,7 @@ import buckelieg.validation.ValidationException;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
 
 import static java.util.Objects.requireNonNull;
 
@@ -98,6 +95,20 @@ public interface Validator<T> {
      */
     static <T> Validator<T> of() {
         return of(value -> value);
+    }
+
+    /**
+     * Builds a new validator instance from empty one
+     *
+     * @param builder validator instance builder
+     * @param <T>     validated element type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument or provided validator is null
+     * @see UnaryOperator
+     * @see #of()
+     */
+    static <T> Validator<T> build(UnaryOperator<Validator<T>> builder) {
+        return requireNonNull(requireNonNull(builder, "Validator builder function must be provided").apply(of()), "Validator instance must be provided");
     }
 
     /**
