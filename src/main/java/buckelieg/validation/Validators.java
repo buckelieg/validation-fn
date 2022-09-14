@@ -34,7 +34,6 @@ public final class Validators {
         throw new UnsupportedOperationException("No instances of Validators");
     }
 
-
     /**
      * Returns a validator for each element of provided collection
      *
@@ -317,6 +316,8 @@ public final class Validators {
     }
 
     /**
+     * Constructs a <code>Validator</code> instance which checks value under provided key
+     *
      * @param key       a key which the value is contained under
      * @param validator validator of value obtained via {@linkplain Map#get(Object)}
      * @param <K>       key type
@@ -334,6 +335,8 @@ public final class Validators {
     }
 
     /**
+     * Constructs a <code>Validator</code> instance which checks value under provided key
+     *
      * @param validator validator of {@linkplain Map.Entry}
      * @param <K>       key type
      * @param <V>       value type
@@ -343,12 +346,14 @@ public final class Validators {
     public static <K, V> Validator<Map<K, V>> eachEntryOf(Validator<Map.Entry<K, V>> validator) {
         requireNonNull(validator, "Validator must be provided");
         return map -> {
-            map.entrySet().forEach(validator::validate);
+            for (Map.Entry<K, V> entry : map.entrySet()) validator.validate(entry);
             return map;
         };
     }
 
     /**
+     * Constructs a <code>Validator</code> instance which checks value under provided key if it is not null
+     *
      * @param key       a key which the value is contained under
      * @param validator validator of value obtained via {@linkplain Map#get(Object)}
      * @param <K>       key type
