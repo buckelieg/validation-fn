@@ -16,6 +16,7 @@
 package buckelieg.validation;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -131,6 +132,20 @@ public final class Iterables {
      */
     public static <E, I extends Iterable<E>> Predicate<I> oneOf(Predicate<E> predicate) {
         return countOf(predicate, 1);
+    }
+
+    /**
+     * Checks if provided element is unique (e.q. collection of values contains this element at most once)
+     *
+     * @param element an element to check for uniqueness
+     * @param <E>     a collection element type
+     * @param <I>     a collection type
+     * @return a {@linkplain Predicate} instance
+     * @see #oneOf(Predicate)
+     * @see Objects#equals(Object, Object)
+     */
+    public static <E, I extends Iterable<E>> Predicate<I> isUnique(E element) {
+        return oneOf(value -> Objects.equals(value, element));
     }
 
 }
