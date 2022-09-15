@@ -11,6 +11,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static java.util.Objects.requireNonNull;
+
 final class Utils {
 
     private Utils() {
@@ -32,6 +34,8 @@ final class Utils {
     }
 
     static <T extends Comparable<T>> Predicate<T> isMeasuredAt(ToIntFunction<T> mapper, Predicate<Integer> predicate) {
+        requireNonNull(mapper, "ToIntFunction must be provided");
+        requireNonNull(predicate, "Predicate must be provided");
         return value -> predicate.test(mapper.applyAsInt(value));
     }
 

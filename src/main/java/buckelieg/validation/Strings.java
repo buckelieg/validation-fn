@@ -247,7 +247,7 @@ public final class Strings {
     }
 
     /**
-     * Returns a {@linkplain Predicate} that checks if length of value is GREATER THAN provided <code>measure</code>
+     * Returns a {@linkplain Predicate} that checks if length of value conforms provided predicate
      *
      * @param predicate a predicate to check this string length against
      * @return a {@linkplain Predicate} instance
@@ -269,7 +269,18 @@ public final class Strings {
     }
 
     /**
-     * Returns a {@linkplain Predicate} that checks minimum length of provided value
+     * Returns a {@linkplain Predicate} that checks if length of value is GREATER THAN OR EQUAL TO provided <code>measure</code>
+     *
+     * @param measure maximum length value
+     * @return a {@linkplain Predicate} instance
+     * @see Predicates#gt(Comparable)
+     */
+    public static Predicate<String> isLengthGt(int measure) {
+        return isLengthOf(Predicates.gt(measure));
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} that checks if length of value is LESS THAN OR EQUAL TO provided <code>measure</code>
      *
      * @param measure minimum length value
      * @return a {@linkplain Predicate} instance
@@ -277,6 +288,28 @@ public final class Strings {
      */
     public static Predicate<String> isLengthLe(int measure) {
         return isLengthOf(Predicates.le(measure));
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} that checks if length of value is LESS THAN provided <code>measure</code>
+     *
+     * @param measure minimum length value
+     * @return a {@linkplain Predicate} instance
+     * @see Predicates#lt(Comparable)
+     */
+    public static Predicate<String> isLengthLt(int measure) {
+        return isLengthOf(Predicates.lt(measure));
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} that checks if length of value is EQUAL TO provided <code>measure</code>
+     *
+     * @param measure minimum length value
+     * @return a {@linkplain Predicate} instance
+     * @see Predicates#eq(Comparable)
+     */
+    public static Predicate<String> isLengthEq(int measure) {
+        return isLengthOf(Predicates.eq(measure));
     }
 
     /**
