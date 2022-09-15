@@ -16,8 +16,9 @@
 package buckelieg.validation;
 
 import java.math.BigDecimal;
-import java.util.function.Function;
 import java.util.function.Predicate;
+
+import static buckelieg.validation.Utils.isMeasuredAt;
 
 /**
  * A collection of number-related predicates
@@ -254,7 +255,4 @@ public final class Numbers {
         return isMeasuredAt(BigDecimal::precision, Predicates.ge(measure));
     }
 
-    private static Predicate<BigDecimal> isMeasuredAt(Function<BigDecimal, Integer> mapper, Predicate<Integer> predicate) {
-        return value -> predicate.test(mapper.apply(value));
-    }
 }

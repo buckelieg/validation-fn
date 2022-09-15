@@ -15,11 +15,14 @@
  */
 package buckelieg.validation;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
+import static buckelieg.validation.Utils.toStream;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -140,38 +143,7 @@ public final class Predicates {
      * @return a {@linkplain Predicate} instance
      */
     public static <T extends Comparable<T>> Predicate<T> in(Enumeration<T> filter) {
-        return in(StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return filter.hasMoreElements();
-            }
-
-            @Override
-            public T next() {
-                return filter.nextElement();
-            }
-        }, Spliterator.ORDERED | Spliterator.IMMUTABLE), false));
-    }
-
-    /**
-     * Checks whether provided element is NOT contained by <code>filter</code> {@linkplain Enumeration} of values
-     *
-     * @param filter an enumerated value list
-     * @param <T>    element type
-     * @return a {@linkplain Predicate} instance
-     */
-    public static <T extends Comparable<T>> Predicate<T> notIn(Enumeration<T> filter) {
-        return notIn(StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return filter.hasMoreElements();
-            }
-
-            @Override
-            public T next() {
-                return filter.nextElement();
-            }
-        }, Spliterator.ORDERED | Spliterator.IMMUTABLE), false));
+        return in(toStream(filter));
     }
 
     /**
@@ -206,6 +178,17 @@ public final class Predicates {
     @SafeVarargs
     public static <T extends Comparable<T>> Predicate<T> notIn(T... filter) {
         return value -> Stream.of(filter).noneMatch(v -> Objects.equals(value, v));
+    }
+
+    /**
+     * Checks whether provided element is NOT contained by <code>filter</code> {@linkplain Enumeration} of values
+     *
+     * @param filter an enumerated value list
+     * @param <T>    element type
+     * @return a {@linkplain Predicate} instance
+     */
+    public static <T extends Comparable<T>> Predicate<T> notIn(Enumeration<T> filter) {
+        return notIn(toStream(filter));
     }
 
 }

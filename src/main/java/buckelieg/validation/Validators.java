@@ -239,7 +239,7 @@ public final class Validators {
      */
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     public static <T> Validator<Optional<T>> ifPresent(Validator<T> validator) {
-        return ifNotNullAnd(Optional::isPresent, value -> {
+        return ifNotNullAnd(Optional::isPresent, (Validator<Optional<T>>) value -> {
             validator.validate(value.get());
             return value;
         });
@@ -267,6 +267,43 @@ public final class Validators {
      */
     public static <T> Validator<Optional<T>> ifPresent(Predicate<T> predicate, String errorMessage) {
         return ifPresent(ofPredicate(predicate, errorMessage));
+    }
+
+    /**
+     * Constructs a <code>Validator</code> instance which checks value for null and if value is not null - applies provided validator
+     *
+     * @param validator a validator to apply
+     * @param <T>       validated value type
+     * @return a <code>Validator</code> instance
+     */
+    public static <T> Validator<T> ifNotNull(Validator<T> validator) {
+        return ifNotNullAnd(value -> true, validator);
+    }
+
+    /**
+     * Constructs a <code>Validator</code> instance which checks value for null and if value is not null - applies provided validator provided in the form of predicate and message supplier
+     *
+     * @param predicate       validation test case
+     * @param messageSupplier error message supplier function
+     * @param <T>             validated value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    public static <T> Validator<T> ifNotNull(Predicate<T> predicate, Function<T, String> messageSupplier) {
+        return ifNotNull(Validator.ofPredicate(predicate, messageSupplier));
+    }
+
+    /**
+     * Constructs a <code>Validator</code> instance which checks value for null and if value is not null - applies provided validator provided in the form of predicate and an error message string
+     *
+     * @param predicate    validation test case
+     * @param errorMessage an error message
+     * @param <T>          validated value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    public static <T> Validator<T> ifNotNull(Predicate<T> predicate, String errorMessage) {
+        return ifNotNull(Validator.ofPredicate(predicate, errorMessage));
     }
 
     /**
@@ -316,58 +353,143 @@ public final class Validators {
     }
 
     /**
-     * Constructs a <code>Validator</code> instance which checks value under provided key
+     * Constructs a <code>Validator</code> instance which checks value for null OR applies another one provided with predicate
      *
-     * @param key       a key which the value is contained under
-     * @param validator validator of value obtained via {@linkplain Map#get(Object)}
-     * @param <K>       key type
-     * @param <V>       value type
+     * @param condition       an extra condition (besides nullness) to be applied
+     * @param messageSupplier an error message supplier function
+     * @param <T>             validated value type
      * @return a <code>Validator</code> instance
      * @throws NullPointerException if any argument is null
      */
-    public static <K, V> Validator<Map<K, V>> keyValueOf(K key, Validator<V> validator) {
-        requireNonNull(key, "Key must be provided");
-        requireNonNull(validator, "Validator must be provided");
-        return map -> {
-            validator.validate(map.get(key));
-            return map;
-        };
+    public static <T> Validator<T> ifNullOr(Predicate<T> condition, Function<T, String> messageSupplier) {
+        requireNonNull(condition, "Condition predicate must be provided");
+        requireNonNull(messageSupplier, "Error message supplier function must be provided");
+        return Validator.ofPredicate(Predicates.<T>of(Objects::isNull).or(condition), messageSupplier);
+    }
+
+    /**
+     * Constructs a <code>Validator</code> instance which checks value for null OR applies another one provided with predicate
+     *
+     * @param condition    an extra condition (besides nullness) to be applied
+     * @param errorMessage an error message
+     * @param <T>          validated value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    public static <T> Validator<T> ifNullOr(Predicate<T> condition, String errorMessage) {
+        requireNonNull(errorMessage, "Error message must be provided");
+        return ifNullOr(condition, value -> errorMessage);
     }
 
     /**
      * Constructs a <code>Validator</code> instance which checks value under provided key
      *
-     * @param validator validator of {@linkplain Map.Entry}
-     * @param <K>       key type
-     * @param <V>       value type
+     * @param valueMapper a key which the value is contained under
+     * @param validator   validator of value obtained via {@linkplain Map#get(Object)}
+     * @param <T>         original value type
+     * @param <R>         mapped value type
      * @return a <code>Validator</code> instance
-     * @throws NullPointerException if argument is null
+     * @throws NullPointerException if any argument is null
      */
-    public static <K, V> Validator<Map<K, V>> eachEntryOf(Validator<Map.Entry<K, V>> validator) {
+    public static <T, R> Validator<T> map(Function<T, R> valueMapper, Validator<R> validator) {
+        requireNonNull(valueMapper, "Value valueMapper must be provided");
         requireNonNull(validator, "Validator must be provided");
-        return map -> {
-            for (Map.Entry<K, V> entry : map.entrySet()) validator.validate(entry);
-            return map;
+        return value -> {
+            validator.validate(valueMapper.apply(value));
+            return value;
         };
     }
 
     /**
-     * Constructs a <code>Validator</code> instance which checks value under provided key if it is not null
+     * Constructs a <code>Validator</code> instance which checks value under provided valueMapper
      *
-     * @param key       a key which the value is contained under
-     * @param validator validator of value obtained via {@linkplain Map#get(Object)}
-     * @param <K>       key type
-     * @param <V>       value type
+     * @param valueMapper a valueMapper which the value is contained under
+     * @param predicate   validator of value obtained via {@linkplain Map#get(Object)}
+     * @param <T>         valueMapper type
+     * @param <R>         value type
      * @return a <code>Validator</code> instance
      * @throws NullPointerException if any argument is null
      */
-    public static <K, V> Validator<Map<K, V>> ifKeyValueIsNotNull(K key, Validator<V> validator) {
-        requireNonNull(key, "Key must be provided");
-        requireNonNull(validator, "Validator must be provided");
-        return map -> {
-            V value = map.get(key);
-            if (null != value) validator.validate(value);
-            return map;
+    public static <T, R> Validator<T> map(Function<T, R> valueMapper, BiPredicate<R, T> predicate, BiFunction<R, T, String> messageSupplier) {
+        requireNonNull(valueMapper, "Key must be provided");
+        requireNonNull(predicate, "Predicate must be provided");
+        requireNonNull(messageSupplier, "Error message supplir function must be provided");
+        return value -> {
+            R mappedValue = valueMapper.apply(value);
+            if (predicate.test(mappedValue, value))
+                throw new ValidationException(messageSupplier.apply(mappedValue, value));
+            return value;
         };
     }
+
+    /**
+     * Constructs a <code>Validator</code> instance which checks value under provided valueMapper
+     *
+     * @param valueMapper a valueMapper which the value is contained under
+     * @param predicate   validator of value obtained via {@linkplain Map#get(Object)}
+     * @param <T>         valueMapper type
+     * @param <R>         value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    public static <T, R> Validator<T> map(Function<T, R> valueMapper, BiPredicate<R, T> predicate, Function<R, String> messageSupplier) {
+        return map(valueMapper, predicate, (mapped, original) -> messageSupplier.apply(mapped));
+    }
+
+    /**
+     * Constructs a <code>Validator</code> instance which checks value under provided valueMapper
+     *
+     * @param valueMapper a valueMapper which the value is contained under
+     * @param predicate   validator of value obtained via {@linkplain Map#get(Object)}
+     * @param <T>         valueMapper type
+     * @param <R>         value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    public static <T, R> Validator<T> map(Function<T, R> valueMapper, BiPredicate<R, T> predicate, String errorMessage) {
+        return map(valueMapper, predicate, value -> errorMessage);
+    }
+
+    /**
+     * Constructs a <code>Validator</code> instance which checks value under provided valueMapper
+     *
+     * @param valueMapper a valueMapper which the value is contained under
+     * @param predicate   validator of value obtained via {@linkplain Map#get(Object)}
+     * @param <T>         valueMapper type
+     * @param <R>         value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    public static <T, R> Validator<T> map(Function<T, R> valueMapper, Predicate<R> predicate, BiFunction<R, T, String> messageSupplier) {
+        return map(valueMapper, (mapped, original) -> predicate.test(mapped), messageSupplier);
+    }
+
+    /**
+     * Constructs a <code>Validator</code> instance which checks value under provided valueMapper
+     *
+     * @param valueMapper a valueMapper which the value is contained under
+     * @param predicate   validator of value obtained via {@linkplain Map#get(Object)}
+     * @param <T>         valueMapper type
+     * @param <R>         value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    public static <T, R> Validator<T> map(Function<T, R> valueMapper, Predicate<R> predicate, Function<R, String> messageSupplier) {
+        return map(valueMapper, (mapped, original) -> predicate.test(mapped), messageSupplier);
+    }
+
+    /**
+     * Constructs a <code>Validator</code> instance which checks value under provided valueMapper
+     *
+     * @param valueMapper a valueMapper which the value is contained under
+     * @param predicate   validator of value obtained via {@linkplain Map#get(Object)}
+     * @param <T>         valueMapper type
+     * @param <R>         value type
+     * @return a <code>Validator</code> instance
+     * @throws NullPointerException if any argument is null
+     */
+    public static <T, R> Validator<T> map(Function<T, R> valueMapper, Predicate<R> predicate, String errorMessage) {
+        return map(valueMapper, (mapped, original) -> predicate.test(mapped), value -> errorMessage);
+    }
+
 }

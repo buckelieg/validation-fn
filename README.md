@@ -112,7 +112,7 @@ Validator<Person> validator = Validators.<Person>notNull("Person must be provide
                         "Age has to be greater than 0 and less than 100" // an error message if we fail
                 )
                 .thenMap(
-                        Person::getAddresses, // walidating address collection
+                        Person::getAddresses, // validating address collection
                         Validators.eachOf(Validators.<Address>notNull("Address must not be null")
                             .thenMap(Address::getCity, Strings::isBlank, "City must not be blank")
                             .thenMap(Address::getStreet, Strings::isBlank, "Street must not be blank")

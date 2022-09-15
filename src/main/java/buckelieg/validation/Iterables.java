@@ -15,11 +15,13 @@
  */
 package buckelieg.validation;
 
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+
+import static buckelieg.validation.Utils.toStream;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 /**
  * A collection of predicates that are applied to iterables
@@ -30,14 +32,10 @@ public final class Iterables {
         throw new UnsupportedOperationException("No instances of Iterables");
     }
 
-    private static <E> Stream<E> toStream(Iterable<E> iterable) {
-        return StreamSupport.stream(iterable.spliterator(), false);
-    }
-
     /**
      * Checks any collection of values to be exact of provided size
      *
-     * @param size collection size to check
+     * @param size collection size to check against
      * @param <E>  a collection element type
      * @param <I>  a collection type
      * @return a {@linkplain Predicate} instance
@@ -85,6 +83,19 @@ public final class Iterables {
     }
 
     /**
+     * Checks if ALL elements of the collection satisfies provided another collection
+     *
+     * @param another another collection to test elements against
+     * @param <E>     a collection element type
+     * @param <I>     a collection type
+     * @return a {@linkplain Predicate} instance
+     * @see Collections#disjoint(Collection, Collection)
+     */
+    public static <E, I extends Iterable<E>> Predicate<I> allOf(I another) {
+        return values -> !Collections.disjoint(toStream(values).collect(toList()), toStream(another).collect(toList()));
+    }
+
+    /**
      * Checks if ANY (one or more) elements of the collection satisfies provided predicate
      *
      * @param predicate a test condition as a {@linkplain Predicate}
@@ -111,7 +122,11 @@ public final class Iterables {
     }
 
     /**
-     * Checks if <code>count</code> of elements in the collection are satisfying provided predicate
+     * Checks if <code>count</code> of elements in the collection are satisfying provided predicate<br/>
+     * This is a shortcut for:
+     * <pre>{@code
+     * countOf(predicate, Predicates.eq(count));
+     * }</pre>
      *
      * @param predicate a test condition as a {@linkplain Predicate}
      * @param <E>       a collection element type
@@ -119,7 +134,23 @@ public final class Iterables {
      * @return a {@linkplain Predicate} instance
      */
     public static <E, I extends Iterable<E>> Predicate<I> countOf(Predicate<E> predicate, long count) {
-        return values -> toStream(values).filter(predicate).count() == count;
+        return countOf(predicate, Predicates.eq(count));
+    }
+
+    /**
+     * Checks if <code>count</code> of elements in the collection are satisfying provided element predicate
+     *
+     * @param element an element test condition
+     * @param count   a predicate to test count with
+     * @param <E>     a collection element type
+     * @param <I>     a collection type
+     * @return a {@linkplain Predicate} instance
+     * @throws NullPointerException if any argument is null
+     */
+    public static <E, I extends Iterable<E>> Predicate<I> countOf(Predicate<E> element, Predicate<Long> count) {
+        requireNonNull(element, "Element predicate must be provided");
+        requireNonNull(count, "Count predicate must be provided");
+        return values -> count.test(toStream(values).filter(element).count());
     }
 
     /**
@@ -146,6 +177,21 @@ public final class Iterables {
      */
     public static <E, I extends Iterable<E>> Predicate<I> isUnique(E element) {
         return oneOf(value -> Objects.equals(value, element));
+    }
+
+    /**
+     * Checks if all elements in provided collection are unique<br/>
+     * i.e. there are none of elements that conforms to <code>Objects.equals(e1, e2) == true</code>
+     *
+     * @param <E> a collection element type
+     * @param <I> a collection type
+     * @return a {@linkplain Predicate} instance
+     */
+    public static <E, I extends Iterable<E>> Predicate<I> allUnique() {
+        return values -> {
+            Collection<E> collection = toStream(values).collect(toList());
+            return collection.size() == new HashSet<>(collection).size();
+        };
     }
 
 }

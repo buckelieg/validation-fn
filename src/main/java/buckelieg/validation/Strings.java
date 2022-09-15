@@ -15,11 +15,12 @@
  */
 package buckelieg.validation;
 
-import java.util.function.IntPredicate;
 import java.util.function.Predicate;
-import java.util.function.ToIntFunction;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static buckelieg.validation.Utils.*;
 
 /**
  * A collection of string-related predicates
@@ -29,11 +30,6 @@ public final class Strings {
     private Strings() {
         throw new UnsupportedOperationException("No instances of Strings");
     }
-
-    /**
-     * Taken from here: https://stackoverflow.com/a/47181151
-     */
-    private static final Pattern PATTERN_EMAIL = Pattern.compile("^[\\w-+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-zA-Z]{2,})$");
 
 
     /**
@@ -253,11 +249,23 @@ public final class Strings {
     /**
      * Returns a {@linkplain Predicate} that checks if length of value is GREATER THAN provided <code>measure</code>
      *
+     * @param predicate a predicate to check this string length against
+     * @return a {@linkplain Predicate} instance
+     * @see Predicates#ge(Comparable)
+     */
+    public static Predicate<String> isLengthOf(Predicate<Integer> predicate) {
+        return isMeasuredAt(String::length, predicate);
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} that checks if length of value is GREATER THAN provided <code>measure</code>
+     *
      * @param measure maximum length value
      * @return a {@linkplain Predicate} instance
+     * @see Predicates#ge(Comparable)
      */
     public static Predicate<String> isLengthGe(int measure) {
-        return isMeasuredAt(String::length, Predicates.ge(measure));
+        return isLengthOf(Predicates.ge(measure));
     }
 
     /**
@@ -265,9 +273,10 @@ public final class Strings {
      *
      * @param measure minimum length value
      * @return a {@linkplain Predicate} instance
+     * @see Predicates#le(Comparable)
      */
     public static Predicate<String> isLengthLe(int measure) {
-        return isMeasuredAt(String::length, Predicates.le(measure));
+        return isLengthOf(Predicates.le(measure));
     }
 
     /**
@@ -279,6 +288,18 @@ public final class Strings {
      */
     public static Predicate<String> matches(String pattern) {
         return value -> value.matches(pattern);
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} that checks if provided value matches specific regular expression pattern
+     *
+     * @param pattern a regular expression pattern
+     * @return a {@linkplain Predicate} instance
+     * @see Pattern#matcher(CharSequence)
+     * @see Matcher#matches()
+     */
+    public static Predicate<String> matches(Pattern pattern) {
+        return value -> pattern.matcher(value).matches();
     }
 
     /**
@@ -295,12 +316,36 @@ public final class Strings {
     }
 
     /**
-     * Returns a {@linkplain Predicate} wrapper for {@linkplain Strings#isEmail} (Number)} method
+     * Returns a {@linkplain Predicate} wrapper for {@linkplain Strings#isEmail} method
      *
      * @return a {@linkplain Predicate} instance
+     * @see #isEmail(String)
      */
     public static Predicate<String> isEmail() {
         return Strings::isEmail;
+    }
+
+    /**
+     * Checks provided string value to conform next pattern:
+     * <pre>{@code
+     * "((25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9])\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[0-9]))"
+     * }</pre>
+     *
+     * @param value a validated value
+     * @return true - if this string conforms the IPv$ address fromat<br/>false - otherwise
+     */
+    public static boolean isIPv4(String value) {
+        return PATTERN_IPv4_ADDRESS.matcher(value).matches();
+    }
+
+    /**
+     * Returns a {@linkplain Predicate} wrapper for {@linkplain Strings#isIPv4(String)} method
+     *
+     * @return a {@linkplain Predicate} instance
+     * @see #isIPv4(String)
+     */
+    public static Predicate<String> isIPv4() {
+        return Strings::isIPv4;
     }
 
     /**
@@ -329,8 +374,10 @@ public final class Strings {
     }
 
     /**
-     * @param value
-     * @return
+     * Checks if provided string value is not blank
+     *
+     * @param value a validated value
+     * @return true - if provided value is not <code>null</code> AND length of the trimmed value is greater than <code>0</code><br/>false - otherwise
      * @see #isBlank(String)
      */
     public static boolean notBlank(String value) {
@@ -431,13 +478,5 @@ public final class Strings {
      */
     public static Predicate<String> isAlphabetic() {
         return Strings::isAlphabetic;
-    }
-
-    private static boolean allCharactersMatch(String value, IntPredicate predicate) {
-        return value.chars().allMatch(predicate);
-    }
-
-    private static Predicate<String> isMeasuredAt(ToIntFunction<String> toInt, Predicate<Integer> predicate) {
-        return value -> predicate.test(toInt.applyAsInt(value));
     }
 }
