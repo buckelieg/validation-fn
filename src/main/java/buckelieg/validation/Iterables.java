@@ -168,15 +168,15 @@ public final class Iterables {
     /**
      * Checks if provided element is unique (e.q. collection of values contains this element at most once)
      *
-     * @param element an element to check for uniqueness
-     * @param <E>     a collection element type
-     * @param <I>     a collection type
+     * @param value a collection element to check for uniqueness
+     * @param <E>   a collection element type
+     * @param <I>   a collection type
      * @return a {@linkplain Predicate} instance
      * @see #oneOf(Predicate)
      * @see Objects#equals(Object, Object)
      */
-    public static <E, I extends Iterable<E>> Predicate<I> isUnique(E element) {
-        return oneOf(value -> Objects.equals(value, element));
+    public static <E, I extends Iterable<E>> Predicate<I> isUnique(E value) {
+        return oneOf(element -> Objects.equals(value, element));
     }
 
     /**
