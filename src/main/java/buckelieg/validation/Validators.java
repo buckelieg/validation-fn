@@ -413,7 +413,7 @@ public final class Validators {
     public static <T, R> Validator<T> map(Function<T, R> valueMapper, BiPredicate<R, T> predicate, BiFunction<R, T, String> messageSupplier) {
         requireNonNull(valueMapper, "Key must be provided");
         requireNonNull(predicate, "Predicate must be provided");
-        requireNonNull(messageSupplier, "Error message supplir function must be provided");
+        requireNonNull(messageSupplier, "Error message supplier function must be provided");
         return value -> {
             R mappedValue = valueMapper.apply(value);
             if (predicate.test(mappedValue, value))

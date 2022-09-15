@@ -15,10 +15,12 @@
  */
 package buckelieg.validation.fn;
 
-import buckelieg.validation.*;
+import buckelieg.validation.Numbers;
+import buckelieg.validation.Strings;
+import buckelieg.validation.ValidationException;
+import buckelieg.validation.Validators;
 import org.junit.Test;
 
-import java.util.Objects;
 import java.util.Optional;
 
 import static buckelieg.validation.Validators.*;
@@ -58,11 +60,7 @@ public class ValidatorTest {
     @Test
     public void test() {
         Validator<MyClass> validator = Validator.build(noop -> noop
-                .thenMapIfNotNull(
-                        MyClass::getStringProperty,
-                        Predicates.<String>of(Objects::isNull).or(String::isEmpty),
-                        NULL_NOR_EMPTY
-                )
+                .thenMapIfNotNull(MyClass::getStringProperty, Validators.ifNullOr(String::isEmpty, NULL_NOR_EMPTY))
                 .thenMap(MyClass::getNumber, Numbers::isNegative, "Not negative")
         );
         assertEquals(
