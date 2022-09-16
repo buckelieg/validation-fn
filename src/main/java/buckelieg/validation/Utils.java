@@ -30,7 +30,7 @@ final class Utils {
     static final Pattern PATTERN_IPv4_ADDRESS = Pattern.compile("((25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9])\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[0-9]))");
 
     static <E> Stream<E> toStream(Iterable<E> iterable) {
-        return StreamSupport.stream(iterable.spliterator(), false);
+        return StreamSupport.stream(requireNonNull(iterable, "Collection must be provided").spliterator(), false);
     }
 
     static <T extends Comparable<T>> Predicate<T> isMeasuredAt(ToIntFunction<T> mapper, Predicate<Integer> predicate) {
@@ -44,6 +44,7 @@ final class Utils {
     }
 
     static <T> Stream<T> toStream(Enumeration<T> enumeration) {
+        requireNonNull(enumeration, "Enumeration must be provided");
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(new Iterator<T>() {
             @Override
             public boolean hasNext() {
