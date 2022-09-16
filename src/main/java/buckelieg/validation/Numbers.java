@@ -176,7 +176,6 @@ public final class Numbers {
      * @see BigDecimal#scale()
      */
     public static Predicate<BigDecimal> isScaleOf(Predicate<Integer> predicate) {
-        requireNonNull(predicate, "Predicate must be provided");
         return isMeasuredAt(BigDecimal::scale, predicate);
     }
 
@@ -249,7 +248,6 @@ public final class Numbers {
      * @see BigDecimal#precision()
      */
     public static Predicate<BigDecimal> isPrecisionOf(Predicate<Integer> predicate) {
-        requireNonNull(predicate, "Predicate must be provided");
         return isMeasuredAt(BigDecimal::precision, predicate);
     }
 

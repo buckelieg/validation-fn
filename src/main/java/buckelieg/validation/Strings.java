@@ -261,7 +261,6 @@ public final class Strings {
      * @see Predicates#ge(Comparable)
      */
     public static Predicate<String> isLengthOf(Predicate<Integer> predicate) {
-        requireNonNull(predicate, "Predicate must be provided");
         return isMeasuredAt(String::length, predicate);
     }
 
