@@ -103,7 +103,6 @@ public final class Validators {
      */
     public static <T, I extends Iterable<T>> Validator<I> eachOf(BiPredicate<T, I> predicate, String errorMessage) {
         requireNonNull(predicate, "Predicate must be provided");
-        requireNonNull(errorMessage, "Error message supplier function must be provided");
         return values -> {
             Validator<T> validator = ofPredicate(value -> predicate.test(value, values), errorMessage);
             for (T value : values) validator.validate(value);
@@ -237,12 +236,8 @@ public final class Validators {
      * @param <T>       validated value type
      * @return a <code>Validator</code> instance
      */
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
     public static <T> Validator<Optional<T>> ifPresent(Validator<T> validator) {
-        return ifNotNullAnd(Optional::isPresent, (Validator<Optional<T>>) value -> {
-            validator.validate(value.get());
-            return value;
-        });
+        return ifNotNullAnd(Optional::isPresent, map(Optional::get, validator));
     }
 
     /**
@@ -377,7 +372,6 @@ public final class Validators {
      * @throws NullPointerException if any argument is null
      */
     public static <T> Validator<T> ifNullOr(Predicate<T> condition, String errorMessage) {
-        requireNonNull(errorMessage, "Error message must be provided");
         return ifNullOr(condition, value -> errorMessage);
     }
 
@@ -433,6 +427,7 @@ public final class Validators {
      * @throws NullPointerException if any argument is null
      */
     public static <T, R> Validator<T> map(Function<T, R> valueMapper, BiPredicate<R, T> predicate, Function<R, String> messageSupplier) {
+        requireNonNull(messageSupplier, "Error message supplier function must be provided");
         return map(valueMapper, predicate, (mapped, original) -> messageSupplier.apply(mapped));
     }
 
@@ -461,6 +456,7 @@ public final class Validators {
      * @throws NullPointerException if any argument is null
      */
     public static <T, R> Validator<T> map(Function<T, R> valueMapper, Predicate<R> predicate, BiFunction<R, T, String> messageSupplier) {
+        requireNonNull(predicate, "Predicate must be provided");
         return map(valueMapper, (mapped, original) -> predicate.test(mapped), messageSupplier);
     }
 
@@ -475,6 +471,7 @@ public final class Validators {
      * @throws NullPointerException if any argument is null
      */
     public static <T, R> Validator<T> map(Function<T, R> valueMapper, Predicate<R> predicate, Function<R, String> messageSupplier) {
+        requireNonNull(predicate, "Predicate must be provided");
         return map(valueMapper, (mapped, original) -> predicate.test(mapped), messageSupplier);
     }
 
@@ -489,6 +486,7 @@ public final class Validators {
      * @throws NullPointerException if any argument is null
      */
     public static <T, R> Validator<T> map(Function<T, R> valueMapper, Predicate<R> predicate, String errorMessage) {
+        requireNonNull(predicate, "Predicate must be provided");
         return map(valueMapper, (mapped, original) -> predicate.test(mapped), value -> errorMessage);
     }
 

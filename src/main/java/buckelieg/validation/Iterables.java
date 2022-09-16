@@ -39,9 +39,11 @@ public final class Iterables {
      * @param <E>  a collection element type
      * @param <I>  a collection type
      * @return a {@linkplain Predicate} instance
+     * @throws IllegalArgumentException if <code>size</code> < 0
      * @see Stream#count()
      */
     public static <E, I extends Iterable<E>> Predicate<I> sizeOf(long size) {
+        if (size < 0) throw new IllegalArgumentException("Size must be greater that or equal to zero");
         return values -> toStream(values).count() == size;
     }
 
@@ -76,9 +78,11 @@ public final class Iterables {
      * @param <E>       a collection element type
      * @param <I>       a collection type
      * @return a {@linkplain Predicate} instance
+     * @throws NullPointerException if <code>predicate</code> is null
      * @see Stream#allMatch(Predicate)
      */
     public static <E, I extends Iterable<E>> Predicate<I> allOf(Predicate<E> predicate) {
+        requireNonNull(predicate, "Predicate must be provided");
         return values -> toStream(values).allMatch(predicate);
     }
 
@@ -89,9 +93,11 @@ public final class Iterables {
      * @param <E>     a collection element type
      * @param <I>     a collection type
      * @return a {@linkplain Predicate} instance
+     * @throws NullPointerException if argument is null
      * @see Collections#disjoint(Collection, Collection)
      */
     public static <E, I extends Iterable<E>> Predicate<I> allOf(I another) {
+        requireNonNull(another, "Collection must be provided");
         return values -> !Collections.disjoint(toStream(values).collect(toList()), toStream(another).collect(toList()));
     }
 
@@ -102,9 +108,11 @@ public final class Iterables {
      * @param <E>       a collection element type
      * @param <I>       a collection type
      * @return a {@linkplain Predicate} instance
+     * @throws NullPointerException if <code>predicate</code> is null
      * @see Stream#anyMatch(Predicate)
      */
     public static <E, I extends Iterable<E>> Predicate<I> anyOf(Predicate<E> predicate) {
+        requireNonNull(predicate, "Predicate must be provided");
         return values -> toStream(values).anyMatch(predicate);
     }
 
@@ -115,9 +123,11 @@ public final class Iterables {
      * @param <E>       a collection element type
      * @param <I>       a collection type
      * @return a {@linkplain Predicate} instance
+     * @throws NullPointerException if <code>predicate</code> is null
      * @see Stream#noneMatch(Predicate)
      */
     public static <E, I extends Iterable<E>> Predicate<I> noneOf(Predicate<E> predicate) {
+        requireNonNull(predicate, "Predicate must be provided");
         return values -> toStream(values).noneMatch(predicate);
     }
 
@@ -132,8 +142,12 @@ public final class Iterables {
      * @param <E>       a collection element type
      * @param <I>       a collection type
      * @return a {@linkplain Predicate} instance
+     * @throws NullPointerException     if <code>predicate</code> is null
+     * @throws IllegalArgumentException if <code>count</code> < 0
+     * @see #countOf(Predicate, Predicate)
      */
     public static <E, I extends Iterable<E>> Predicate<I> countOf(Predicate<E> predicate, long count) {
+        if (count < 0) throw new IllegalArgumentException("Count must be greater that or equal to zero");
         return countOf(predicate, Predicates.eq(count));
     }
 
@@ -160,6 +174,7 @@ public final class Iterables {
      * @param <E>       a collection element type
      * @param <I>       a collection type
      * @return a {@linkplain Predicate} instance
+     * @throws NullPointerException if <code>predicate</code> is null
      */
     public static <E, I extends Iterable<E>> Predicate<I> oneOf(Predicate<E> predicate) {
         return countOf(predicate, 1);

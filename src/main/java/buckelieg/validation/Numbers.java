@@ -19,6 +19,8 @@ import java.math.BigDecimal;
 import java.util.function.Predicate;
 
 import static buckelieg.validation.Utils.isMeasuredAt;
+import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 
 /**
  * A collection of number-related predicates
@@ -146,13 +148,35 @@ public final class Numbers {
     }
 
     /**
+     * Check provided number to be less than or equal provided <code>maximum</code> AND greater than or equal to provided <code>minimum</code>
+     *
+     * @param minimum a minimum allowed number
+     * @param maximum a maximum allowed number
+     * @param <N>     a value type
+     * @return a {@linkplain Predicate} instance
+     * @throws NullPointerException     if any argument is null
+     * @throws IllegalArgumentException if <code>minimum</code> is greater than <code>maximum</code>
+     * @see Predicates#ge(Comparable)
+     * @see Predicates#le(Comparable)
+     */
+    public static <N extends Number & Comparable<N>> Predicate<N> inRange(N minimum, N maximum) {
+        requireNonNull(minimum, "Minimum number must be provided");
+        requireNonNull(maximum, "Maximum number must be provided");
+        if (minimum.compareTo(maximum) > 0)
+            throw new IllegalArgumentException(format("Invalid range bounds: [%s..%s]", minimum, maximum));
+        return max(maximum).and(min(minimum)).negate();
+    }
+
+    /**
      * Check if this {@linkplain BigDecimal} value scale conforms provided predicate
      *
      * @param predicate a predicate to test scale with
      * @return a {@linkplain Predicate} instance
+     * @throws NullPointerException if <code>predicate</code> is null
      * @see BigDecimal#scale()
      */
     public static Predicate<BigDecimal> isScaleOf(Predicate<Integer> predicate) {
+        requireNonNull(predicate, "Predicate must be provided");
         return isMeasuredAt(BigDecimal::scale, predicate);
     }
 
@@ -221,9 +245,11 @@ public final class Numbers {
      *
      * @param predicate a predicate to test precision with
      * @return a {@linkplain Predicate} instance
+     * @throws NullPointerException if <code>predicate</code> is null
      * @see BigDecimal#precision()
      */
     public static Predicate<BigDecimal> isPrecisionOf(Predicate<Integer> predicate) {
+        requireNonNull(predicate, "Predicate must be provided");
         return isMeasuredAt(BigDecimal::precision, predicate);
     }
 

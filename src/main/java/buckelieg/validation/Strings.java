@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static buckelieg.validation.Utils.*;
+import static java.util.Objects.requireNonNull;
 
 /**
  * A collection of string-related predicates
@@ -38,9 +39,11 @@ public final class Strings {
      * @param enumeration an {@linkplain Enum}eration with checked values
      * @param <T>         enumeration type
      * @return true - if provided value is one of the elements of provided enum type<br/>false - otherwise
+     * @throws NullPointerException if argument is null
      * @see Enum#valueOf(Class, String)
      */
     public static <T extends Enum<T>> Predicate<String> in(Class<T> enumeration) {
+        requireNonNull(enumeration, "Enumeration type must be provided");
         return value -> {
             try {
                 Enum.valueOf(enumeration, value);
@@ -254,9 +257,11 @@ public final class Strings {
      *
      * @param predicate a predicate to check this string length against
      * @return a {@linkplain Predicate} instance
+     * @throws NullPointerException if <code>predicate</code> is null
      * @see Predicates#ge(Comparable)
      */
     public static Predicate<String> isLengthOf(Predicate<Integer> predicate) {
+        requireNonNull(predicate, "Predicate must be provided");
         return isMeasuredAt(String::length, predicate);
     }
 
@@ -331,10 +336,12 @@ public final class Strings {
      *
      * @param pattern a regular expression pattern
      * @return a {@linkplain Predicate} instance
+     * @throws NullPointerException if <code>pattern</code> is null
      * @see Pattern#matcher(CharSequence)
      * @see Matcher#matches()
      */
     public static Predicate<String> matches(Pattern pattern) {
+        requireNonNull(pattern, "Pattern must be provided");
         return value -> pattern.matcher(value).matches();
     }
 
