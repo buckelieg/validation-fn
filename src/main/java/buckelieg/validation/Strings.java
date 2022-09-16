@@ -33,9 +33,12 @@ public final class Strings {
 
 
     /**
+     * Checks if provided value is an enumeration value
+     *
      * @param enumeration an {@linkplain Enum}eration with checked values
      * @param <T>         enumeration type
      * @return true - if provided value is one of the elements of provided enum type<br/>false - otherwise
+     * @see Enum#valueOf(Class, String)
      */
     public static <T extends Enum<T>> Predicate<String> in(Class<T> enumeration) {
         return value -> {
