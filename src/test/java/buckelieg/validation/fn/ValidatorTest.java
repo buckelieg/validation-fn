@@ -60,7 +60,7 @@ public class ValidatorTest {
     @Test
     public void test() {
         Validator<MyClass> validator = Validator.build(noop -> noop
-                .thenMapIfNotNull(MyClass::getStringProperty, Validators.ifNullOr(String::isEmpty, NULL_NOR_EMPTY))
+                .thenMapIfNotNull(MyClass::getStringProperty, Validators.isNullOr(String::isEmpty, NULL_NOR_EMPTY))
                 .thenMap(MyClass::getNumber, Numbers::isNegative, "Not negative")
         );
         assertEquals(
