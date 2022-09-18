@@ -357,7 +357,7 @@ public final class Validators {
      * @throws NullPointerException if any argument is null
      */
     public static <T> Validator<T> notNullOr(Predicate<T> condition, Function<T, String> messageSupplier) {
-        return Validator.ofPredicate(Predicates.<T>of(Objects::isNull).or(requireNonNull(condition, "Condition predicate must be provided")), messageSupplier);
+        return Validator.ofPredicate(Predicates.<T>of(Objects::isNull).or(condition), messageSupplier);
     }
 
     /**
