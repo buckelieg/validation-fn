@@ -16,6 +16,7 @@
 package buckelieg.validation.fn;
 
 import buckelieg.validation.ValidationException;
+import buckelieg.validation.Validators;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -133,9 +134,7 @@ public interface Validator<T> {
         requireNonNull(predicate, "Predicate predicate must be provided");
         requireNonNull(messageSupplier, "Message supplier must be provided");
         return value -> {
-            if (predicate.test(value)) {
-                throw new ValidationException(messageSupplier.apply(value));
-            }
+            if (predicate.test(value)) throw new ValidationException(messageSupplier.apply(value));
             return value;
         };
     }
@@ -211,9 +210,7 @@ public interface Validator<T> {
         requireNonNull(next, "Validator must be provided");
         return value -> {
             validate(value);
-            if (condition.test(value)) {
-                next.validate(value);
-            }
+            if (condition.test(value)) next.validate(value);
             return value;
         };
     }
@@ -303,12 +300,7 @@ public interface Validator<T> {
      * @throws NullPointerException if any argument is null
      */
     default <R> Validator<T> thenMapIf(Predicate<T> condition, Function<T, R> valueMapper, Validator<R> next) {
-        requireNonNull(valueMapper, "Value mapping function must be provided");
-        requireNonNull(next, "Mapped value validator must be provided");
-        return thenIf(condition, value -> {
-            next.validate(valueMapper.apply(value));
-            return value;
-        });
+        return thenIf(condition, Validators.map(valueMapper, next));
     }
 
     /**
@@ -336,16 +328,7 @@ public interface Validator<T> {
      * @throws NullPointerException if any argument is null
      */
     default <R> Validator<T> thenMapIf(Predicate<T> condition, Function<T, R> valueMapper, BiPredicate<R, T> predicate, BiFunction<R, T, String> messageSupplier) {
-        requireNonNull(valueMapper, "Value mapping function must be provided");
-        requireNonNull(predicate, "Predicate value validator must be provided");
-        requireNonNull(messageSupplier, "Message supplier must be provided");
-        return thenIf(condition, value -> {
-            R mappedValue = valueMapper.apply(value);
-            if (predicate.test(mappedValue, value)) {
-                throw new ValidationException(messageSupplier.apply(mappedValue, value));
-            }
-            return value;
-        });
+        return thenIf(condition, Validators.map(valueMapper, predicate, messageSupplier));
     }
 
     /**
@@ -374,13 +357,7 @@ public interface Validator<T> {
      * @see Validator#thenMap(Function, BiPredicate, BiFunction)
      */
     default <R> Validator<T> thenMapIf(Predicate<T> condition, Function<T, R> valueMapper, BiPredicate<R, T> predicate, Function<R, String> messageSupplier) {
-        requireNonNull(valueMapper, "Value mapping function must be provided");
-        requireNonNull(predicate, "Predicate value validator must be provided");
-        requireNonNull(messageSupplier, "Message supplier must be provided");
-        return thenIf(condition, value -> {
-            ofPredicate(v -> predicate.test(v, value), messageSupplier).validate(valueMapper.apply(value));
-            return value;
-        });
+        return thenIf(condition, Validators.map(valueMapper, predicate, messageSupplier));
     }
 
     /**
@@ -436,16 +413,7 @@ public interface Validator<T> {
      * @throws NullPointerException if any argument is null
      */
     default <R> Validator<T> thenMapIf(Predicate<T> condition, Function<T, R> valueMapper, Predicate<R> predicate, BiFunction<R, T, String> messageSupplier) {
-        requireNonNull(valueMapper, "Value mapping function must be provided");
-        requireNonNull(predicate, "Mapped value predicate must be provided");
-        requireNonNull(messageSupplier, "Error message supplier function must be provided");
-        return thenIf(condition, value -> {
-            R mappedValue = valueMapper.apply(value);
-            if (predicate.test(mappedValue)) {
-                throw new ValidationException(messageSupplier.apply(mappedValue, value));
-            }
-            return value;
-        });
+        return thenIf(condition, Validators.map(valueMapper, predicate, messageSupplier));
     }
 
     /**
