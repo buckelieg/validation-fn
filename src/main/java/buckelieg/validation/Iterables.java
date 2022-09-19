@@ -146,7 +146,7 @@ public final class Iterables {
      * @throws IllegalArgumentException if <code>count</code> < 0
      * @see #countOf(Predicate, Predicate)
      */
-    public static <E, I extends Iterable<E>> Predicate<I> countOf(Predicate<E> predicate, long count) {
+    public static <E, I extends Iterable<E>> Predicate<I> countEq(Predicate<E> predicate, long count) {
         if (count < 0) throw new IllegalArgumentException("Count must be greater that or equal to zero");
         return countOf(predicate, Predicates.eq(count));
     }
@@ -177,7 +177,7 @@ public final class Iterables {
      * @throws NullPointerException if <code>predicate</code> is null
      */
     public static <E, I extends Iterable<E>> Predicate<I> oneOf(Predicate<E> predicate) {
-        return countOf(predicate, 1);
+        return countEq(predicate, 1);
     }
 
     /**
