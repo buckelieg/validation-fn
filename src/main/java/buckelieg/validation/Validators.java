@@ -82,13 +82,8 @@ public final class Validators {
      * @throws NullPointerException if any argument is null
      */
     public static <T, I extends Iterable<T>> Validator<I> eachOf(BiPredicate<T, I> predicate, Function<T, String> messageSupplier) {
-        requireNonNull(predicate, "Predicate must be provided");
         requireNonNull(messageSupplier, "Error message supplier function must be provided");
-        return values -> {
-            Validator<T> validator = ofPredicate(value -> predicate.test(value, values), messageSupplier);
-            for (T value : values) validator.validate(value);
-            return values;
-        };
+        return eachOf(predicate, (value, values) -> messageSupplier.apply(value));
     }
 
     /**
@@ -102,12 +97,7 @@ public final class Validators {
      * @throws NullPointerException if any argument is null
      */
     public static <T, I extends Iterable<T>> Validator<I> eachOf(BiPredicate<T, I> predicate, String errorMessage) {
-        requireNonNull(predicate, "Predicate must be provided");
-        return values -> {
-            Validator<T> validator = ofPredicate(value -> predicate.test(value, values), errorMessage);
-            for (T value : values) validator.validate(value);
-            return values;
-        };
+        return eachOf(predicate, value -> errorMessage);
     }
 
     /**
@@ -122,12 +112,7 @@ public final class Validators {
      */
     public static <T, I extends Iterable<T>> Validator<I> eachOf(Predicate<T> predicate, BiFunction<T, I, String> messageSupplier) {
         requireNonNull(predicate, "Predicate must be provided");
-        requireNonNull(messageSupplier, "Error message supplier function must be provided");
-        return values -> {
-            Validator<T> validator = ofPredicate(predicate, value -> messageSupplier.apply(value, values));
-            for (T value : values) validator.validate(value);
-            return values;
-        };
+        return eachOf((value, values) -> predicate.test(value), messageSupplier);
     }
 
     /**
