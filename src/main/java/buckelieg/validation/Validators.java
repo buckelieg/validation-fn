@@ -215,7 +215,7 @@ public final class Validators {
      * Constructs a {@linkplain Validator} instance that tests value contained in the {@linkplain Optional} object if:<br/>
      * 1) Optional itself is non-null object<br/>
      * 2) Optional.isPresent method returns <code>true</code><br/>
-     * Otherwise no validation are made
+     * Otherwise no validations are made
      *
      * @param validator a value validator
      * @param <T>       validated value type
