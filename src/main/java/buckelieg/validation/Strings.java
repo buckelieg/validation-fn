@@ -233,23 +233,45 @@ public final class Strings {
     }
 
     /**
-     * Checks if provided value consist only of an UPPER cased characters
+     * Checks if provided value consists only of an UPPER-cased characters
      *
      * @param value a validated value
-     * @return true - if provided value is an UPPER cased string<br/>false - otherwise
+     * @return true - if provided value is an UPPER-cased string<br/>false - otherwise
      */
     public static boolean isUpper(String value) {
         return value.equals(value.toUpperCase());
     }
 
     /**
-     * Checks if provided value consist only of an LOWER cased characters
+     * Checks if provided value consists only of a LOWER-cased characters
      *
      * @param value a validated value
-     * @return true - if provided value is an LOWER cased string<br/>false - otherwise
+     * @return true - if provided value is a LOWER-cased string<br/>false - otherwise
      */
     public static boolean isLower(String value) {
         return value.equals(value.toLowerCase());
+    }
+
+    /**
+     * Checks if provided value contains both an UPPER-cased AND LOWER-cased characters
+     *
+     * @param value a validated value
+     * @return true - if provided value is a MIXED-cased string<br/>false - otherwise
+     */
+    public static boolean isMixed(String value) {
+        boolean hasUpperCaseChar = false;
+        boolean hasLowerCaseChar = false;
+        for (char ch : value.toCharArray()) {
+            if (Character.isUpperCase(ch)) {
+                hasUpperCaseChar = true;
+            } else if (Character.isLowerCase(ch)) {
+                hasLowerCaseChar = true;
+            }
+            if (hasLowerCaseChar && hasUpperCaseChar) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

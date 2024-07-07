@@ -35,12 +35,12 @@ final class Utils {
     }
 
     /**
-     * Taken from here: https://stackoverflow.com/a/47181151
+     * Taken from here: <a href="https://stackoverflow.com/a/47181151">stackoverflow</a>
      */
     static final Pattern PATTERN_EMAIL = Pattern.compile("^[\\w-+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-zA-Z]{2,})$");
 
     /**
-     * Taken from here: https://stackoverflow.com/a/31138716
+     * Taken from here: <a href="https://stackoverflow.com/a/31138716">stackoverflow</a>
      */
     static final Pattern PATTERN_IPv4_ADDRESS = Pattern.compile("((25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9])\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[0-9]))");
 

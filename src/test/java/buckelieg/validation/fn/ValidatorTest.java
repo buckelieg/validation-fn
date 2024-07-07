@@ -15,10 +15,7 @@
  */
 package buckelieg.validation.fn;
 
-import buckelieg.validation.Numbers;
-import buckelieg.validation.Strings;
-import buckelieg.validation.ValidationException;
-import buckelieg.validation.Validators;
+import buckelieg.validation.*;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -88,7 +85,7 @@ public class ValidatorTest {
                 .thenMap(Person::getLastName, Strings::isBlank, "Last name must not be empty")
                 .thenMap(
                         Person::getAge,
-                        Numbers.<Integer>isNegative().or(Numbers.max(100)),
+                        Numbers.<Integer>isNegative().or(Predicates.ge(100)),
                         "Age has to be greater than 0 and less than 100"
                 )
                 .thenMap(Person::getAddresses, eachOf(Validators.<Address>notNull("Address must not be null")

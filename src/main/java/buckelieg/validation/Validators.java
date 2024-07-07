@@ -183,7 +183,7 @@ public final class Validators {
      * @param messageSupplier an error message supplier function
      * @param <T>             validated value type
      * @return a <code>Validator</code> instance
-     * @throws NullPointerException if any argument is null
+     * @throws NullPointerException if <code>messageSupplier</code> is null
      */
     public static <T> Validator<T> isNull(Supplier<String> messageSupplier) {
         return ofPredicate(Objects::nonNull, requireNonNull(messageSupplier, "Error message supplier must be provided").get());
