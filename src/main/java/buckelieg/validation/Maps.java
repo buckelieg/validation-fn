@@ -22,11 +22,9 @@ import java.util.function.Predicate;
 /**
  * Utility class consisting of map-related predicates
  */
-public final class Maps {
+public enum Maps {
 
-    private Maps() {
-        throw new UnsupportedOperationException("No instances of Maps");
-    }
+    ;
 
     /**
      * Checks if this map contains provided key

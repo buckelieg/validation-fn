@@ -28,11 +28,9 @@ import static java.util.Objects.requireNonNull;
 /**
  * A collection of general purpose predicates with the basic checks
  */
-public final class Predicates {
+public enum Predicates {
 
-    private Predicates() {
-        throw new UnsupportedOperationException("No instances of Predicates");
-    }
+    ;
 
     /**
      * Converts provided lambda function to a {@linkplain Predicate} reference

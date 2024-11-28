@@ -28,11 +28,9 @@ import java.util.stream.StreamSupport;
 
 import static java.util.Objects.requireNonNull;
 
-final class Utils {
+enum Utils {
 
-    private Utils() {
-        throw new UnsupportedOperationException("No instances of Utils");
-    }
+    ;
 
     /**
      * Taken from here: <a href="https://stackoverflow.com/a/47181151">stackoverflow</a>

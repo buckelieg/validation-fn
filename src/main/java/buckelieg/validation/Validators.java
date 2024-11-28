@@ -15,24 +15,22 @@
  */
 package buckelieg.validation;
 
-import buckelieg.validation.fn.Validator;
+import buckelieg.fn.Validator;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.*;
 
-import static buckelieg.validation.fn.Validator.ofPredicate;
+import static buckelieg.fn.Validator.ofPredicate;
 import static java.util.Objects.requireNonNull;
 
 /**
  * A collection of general purpose validators
  */
-public final class Validators {
+public enum Validators {
 
-    private Validators() {
-        throw new UnsupportedOperationException("No instances of Validators");
-    }
+    ;
 
     /**
      * Returns a validator for each element of provided collection

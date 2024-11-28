@@ -26,11 +26,9 @@ import static java.util.stream.Collectors.toList;
 /**
  * A collection of predicates that are applied to iterables
  */
-public final class Iterables {
+public enum Iterables {
 
-    private Iterables() {
-        throw new UnsupportedOperationException("No instances of Iterables");
-    }
+    ;
 
     /**
      * Checks any collection of values to be exact of provided size

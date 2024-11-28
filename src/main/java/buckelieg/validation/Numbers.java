@@ -23,11 +23,9 @@ import static buckelieg.validation.Utils.isMeasuredAt;
 /**
  * A collection of number-related predicates
  */
-public final class Numbers {
+public enum Numbers {
 
-    private Numbers() {
-        throw new UnsupportedOperationException("No instances of Numbers");
-    }
+    ;
 
     private static BigDecimal toBigDecimal(Object value) {
         return new BigDecimal(value.toString());

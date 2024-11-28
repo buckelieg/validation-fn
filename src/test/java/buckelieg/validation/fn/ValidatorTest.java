@@ -15,13 +15,14 @@
  */
 package buckelieg.validation.fn;
 
+import buckelieg.fn.Validator;
 import buckelieg.validation.*;
 import org.junit.Test;
 
 import java.util.Optional;
 
+import static buckelieg.fn.Validator.ofPredicate;
 import static buckelieg.validation.Validators.*;
-import static buckelieg.validation.fn.Validator.ofPredicate;
 import static org.junit.Assert.*;
 
 //TODO write more test cases here...
@@ -55,7 +56,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void test() {
+    public void testSimple() {
         Validator<MyClass> validator = Validator.build(noop -> noop
                 .thenMapIfNotNull(MyClass::getStringProperty, Validators.notNullOr(String::isEmpty, NULL_NOR_EMPTY))
                 .thenMap(MyClass::getNumber, Numbers::isNegative, "Not negative")
@@ -74,6 +75,11 @@ public class ValidatorTest {
         Address address1 = new Address("MyCity", "MyStreet", 13);
         Address address2 = new Address();
         Validator<Person> validator = Validators.<Person>notNull("Person must be provided")
+                .thenMap(
+                        Person::getAge,
+                        (age, person) -> false,
+                        ""
+                )
                 .thenMap(
                         Person::getFirstName,
                         Strings.isBlank().or(Strings.isLengthLe(6)),

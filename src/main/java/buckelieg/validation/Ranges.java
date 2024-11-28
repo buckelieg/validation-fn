@@ -20,11 +20,9 @@ import java.util.function.Predicate;
 /**
  * Utility class consisting of range-related predicates
  */
-public final class Ranges {
+public enum Ranges {
 
-  private Ranges() {
-	throw new UnsupportedOperationException("No instances of Dates");
-  }
+  ;
 
   /**
    * Returns a {@linkplain Predicate} that checks if provided <code>value</code> is INSIDE the range of <code>from</code> and <code>to</code> date points

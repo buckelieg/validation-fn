@@ -26,11 +26,9 @@ import static java.util.Objects.requireNonNull;
 /**
  * A collection of string-related predicates
  */
-public final class Strings {
+public enum Strings {
 
-    private Strings() {
-        throw new UnsupportedOperationException("No instances of Strings");
-    }
+    ;
 
 
     /**

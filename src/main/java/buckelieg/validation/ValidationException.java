@@ -15,7 +15,7 @@
  */
 package buckelieg.validation;
 
-import buckelieg.validation.fn.Validator;
+import buckelieg.fn.Validator;
 
 import java.util.Objects;
 
