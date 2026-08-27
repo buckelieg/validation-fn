@@ -15,12 +15,16 @@
  */
 package buckelieg.validation;
 
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static buckelieg.validation.Utils.*;
+import static buckelieg.validation.Utils.PATTERN_EMAIL;
+import static buckelieg.validation.Utils.PATTERN_IPv4_ADDRESS;
+import static buckelieg.validation.Utils.allCharactersMatch;
+import static buckelieg.validation.Utils.isMeasuredAt;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -237,7 +241,7 @@ public enum Strings {
      * @return true - if provided value is an UPPER-cased string<br/>false - otherwise
      */
     public static boolean isUpper(String value) {
-        return value.equals(value.toUpperCase());
+        return Objects.equals(value, value.toUpperCase());
     }
 
     /**
@@ -247,7 +251,7 @@ public enum Strings {
      * @return true - if provided value is a LOWER-cased string<br/>false - otherwise
      */
     public static boolean isLower(String value) {
-        return value.equals(value.toLowerCase());
+        return Objects.equals(value, value.toLowerCase());
     }
 
     /**

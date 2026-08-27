@@ -25,10 +25,10 @@ public enum Ranges {
   ;
 
   /**
-   * Returns a {@linkplain Predicate} that checks if provided <code>value</code> is INSIDE the range of <code>from</code> and <code>to</code> date points
+   * Returns a {@linkplain Predicate} that checks if provided <code>value</code> is INSIDE the range of <code>from</code> and <code>to</code> points
    *
-   * @param from range start date
-   * @param to   range end date
+   * @param from range start
+   * @param to   range end
    * @param <T>  a value type
    * @return a {@linkplain Predicate} instance
    */
@@ -37,10 +37,10 @@ public enum Ranges {
   }
 
   /**
-   * Returns a {@linkplain Predicate} that checks if provided <code>value</code> is OUTSIDE the range of <code>from</code> and <code>to</code> date points
+   * Returns a {@linkplain Predicate} that checks if provided <code>value</code> is OUTSIDE the range of <code>from</code> and <code>to</code> points
    *
-   * @param from range start date
-   * @param to   range end date
+   * @param from range start
+   * @param to   range end
    * @param <T>  a value type
    * @return a {@linkplain Predicate} instance
    */
@@ -49,10 +49,10 @@ public enum Ranges {
   }
 
   /**
-   * Returns a {@linkplain Predicate} that checks if provided <code>value</code> is STRICTLY INSIDE (not equal to range border) the range of <code>from</code> to <code>to</code> date points<br/>
+   * Returns a {@linkplain Predicate} that checks if provided <code>value</code> is STRICTLY INSIDE (not equal to range border) the range of <code>from</code> to <code>to</code> points<br/>
    *
-   * @param from range start date
-   * @param to   range end date
+   * @param from range start
+   * @param to   range end
    * @param <T>  a value type
    * @return a {@linkplain Predicate} instance
    */

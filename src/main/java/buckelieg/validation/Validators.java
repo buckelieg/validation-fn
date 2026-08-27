@@ -20,7 +20,11 @@ import buckelieg.fn.Validator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static buckelieg.fn.Validator.ofPredicate;
 import static java.util.Objects.requireNonNull;
@@ -255,7 +259,7 @@ public enum Validators {
      * @return a <code>Validator</code> instance
      */
     public static <T> Validator<T> ifNotNull(Validator<T> validator) {
-        return ifNotNullAnd(value -> true, validator);
+        return ifNotNullAnd(Predicates.TRUE.predicate(), validator);
     }
 
     /**

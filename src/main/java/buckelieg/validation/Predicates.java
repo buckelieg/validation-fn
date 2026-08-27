@@ -31,74 +31,86 @@ import static java.util.stream.Collectors.toList;
  */
 public enum Predicates {
 
-    ;
+  TRUE(value -> true),
+  FALSE(value -> false);
 
-    /**
-     * Converts provided lambda function to a {@linkplain Predicate} reference
-     *
-     * @param predicate a predicate to obtain reference to (must not be null)
-     * @param <T>       a value type
-     * @return a reference to {@linkplain Predicate}
-     * @throws NullPointerException if <code>predicate</code> is null
-     */
-    public static <T> Predicate<T> of(Predicate<T> predicate) {
-        return requireNonNull(predicate, "Predicate must be provided");
-    }
+  private final Predicate<?> predicate;
 
-    /**
-     * Checks if provided <code>value</code> is GREATER THAN the <code>measure</code> value
-     *
-     * @param measure a value the validated value is validated against
-     * @param <T>     a value type
-     * @return a {@linkplain Predicate} instance
-     */
-    public static <T extends Comparable<T>> Predicate<T> gt(T measure) {
-        return value -> value.compareTo(measure) > 0;
-    }
+  Predicates(Predicate<?> predicate) {
+	this.predicate = predicate;
+  }
 
-    /**
-     * Checks if provided <code>value</code> is LESS THAN the <code>measure</code> value
-     *
-     * @param measure a value the validated value is validated against
-     * @param <T>     a value type
-     * @return a {@linkplain Predicate} instance
-     */
-    public static <T extends Comparable<T>> Predicate<T> lt(T measure) {
-        return value -> value.compareTo(measure) < 0;
-    }
+  @SuppressWarnings("unchecked")
+  public <T> Predicate<T> predicate() {
+	return (Predicate<T>) predicate;
+  }
 
-    /**
-     * Checks if provided <code>value</code> is EQUAL to the <code>measure</code> value
-     *
-     * @param measure a value the validated value is validated against
-     * @param <T>     a value type
-     * @return a {@linkplain Predicate} instance
-     */
-    public static <T extends Comparable<T>> Predicate<T> eq(T measure) {
-        return value -> value.compareTo(measure) == 0;
-    }
+  /**
+   * Converts provided lambda function to a {@linkplain Predicate} reference
+   *
+   * @param predicate a predicate to obtain reference to (must not be null)
+   * @param <T>       a value type
+   * @return a reference to {@linkplain Predicate}
+   * @throws NullPointerException if <code>predicate</code> is null
+   */
+  public static <T> Predicate<T> of(Predicate<T> predicate) {
+	return requireNonNull(predicate, "Predicate must be provided");
+  }
 
-    /**
-     * Checks if provided <code>value</code> is GREATER THAN OR EQUAL to the <code>measure</code> value
-     *
-     * @param measure a value the validated value is validated against
-     * @param <T>     a value type
-     * @return a {@linkplain Predicate} instance
-     */
-    public static <T extends Comparable<T>> Predicate<T> ge(T measure) {
-        return value -> value.compareTo(measure) >= 0;
-    }
+  /**
+   * Checks if provided <code>value</code> is GREATER THAN the <code>measure</code> value
+   *
+   * @param measure a value the validated value is validated against
+   * @param <T>     a value type
+   * @return a {@linkplain Predicate} instance
+   */
+  public static <T extends Comparable<T>> Predicate<T> gt(T measure) {
+	return value -> value.compareTo(measure) > 0;
+  }
 
-    /**
-     * Checks if provided <code>value</code> is LESS THAN OR EQUAL to the <code>measure</code> value
-     *
-     * @param measure a value the validated value is validated against
-     * @param <T>     a value type
-     * @return a {@linkplain Predicate} instance
-     */
-    public static <T extends Comparable<T>> Predicate<T> le(T measure) {
-        return value -> value.compareTo(measure) <= 0;
-    }
+  /**
+   * Checks if provided <code>value</code> is LESS THAN the <code>measure</code> value
+   *
+   * @param measure a value the validated value is validated against
+   * @param <T>     a value type
+   * @return a {@linkplain Predicate} instance
+   */
+  public static <T extends Comparable<T>> Predicate<T> lt(T measure) {
+	return value -> value.compareTo(measure) < 0;
+  }
+
+  /**
+   * Checks if provided <code>value</code> is EQUAL to the <code>measure</code> value
+   *
+   * @param measure a value the validated value is validated against
+   * @param <T>     a value type
+   * @return a {@linkplain Predicate} instance
+   */
+  public static <T extends Comparable<T>> Predicate<T> eq(T measure) {
+	return value -> value.compareTo(measure) == 0;
+  }
+
+  /**
+   * Checks if provided <code>value</code> is GREATER THAN OR EQUAL to the <code>measure</code> value
+   *
+   * @param measure a value the validated value is validated against
+   * @param <T>     a value type
+   * @return a {@linkplain Predicate} instance
+   */
+  public static <T extends Comparable<T>> Predicate<T> ge(T measure) {
+	return value -> value.compareTo(measure) >= 0;
+  }
+
+  /**
+   * Checks if provided <code>value</code> is LESS THAN OR EQUAL to the <code>measure</code> value
+   *
+   * @param measure a value the validated value is validated against
+   * @param <T>     a value type
+   * @return a {@linkplain Predicate} instance
+   */
+  public static <T extends Comparable<T>> Predicate<T> le(T measure) {
+	return value -> value.compareTo(measure) <= 0;
+  }
 
     /**
      * Checks if provided <code>value</code> is contained by a <code>filter</code> collection

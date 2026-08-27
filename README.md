@@ -153,6 +153,7 @@ There are some helper classes that makes writing code shorter and easier, these 
 + Dates - predicate collection for dates
 + Numbers - predicate collection for numbers
 + Maps - predicate collection related to maps
++ Classes - a collection of predicates that relates to classes and interfaces
 
 These are subject to extension. 
 

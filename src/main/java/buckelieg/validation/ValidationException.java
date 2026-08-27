@@ -17,6 +17,8 @@ package buckelieg.validation;
 
 import buckelieg.fn.Validator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -24,9 +26,10 @@ import java.util.Objects;
  *
  * @see Validator#validate(Object)
  */
-public class ValidationException extends RuntimeException {
+public final class ValidationException extends RuntimeException {
 
     private final String message;
+    private final List<ValidationException> exceptions = new ArrayList<>();
 
     /**
      * Constructs an instance of exception with provided message
@@ -52,5 +55,13 @@ public class ValidationException extends RuntimeException {
     @Override
     public String getMessage() {
         return message;
+    }
+
+    public void addException(ValidationException e) {
+        exceptions.add(e);
+    }
+
+    public String getMessages() {
+        return null;
     }
 }

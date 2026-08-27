@@ -15,8 +15,10 @@
  */
 package buckelieg.validation;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.IntPredicate;
@@ -26,6 +28,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
 enum Utils {
@@ -68,7 +71,17 @@ enum Utils {
             public T next() {
                 return enumeration.nextElement();
             }
-        }, Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
+        }, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.SIZED), false);
+    }
+
+    static <T> List<Class<?>> allInterfaces(T value) {
+        Class<?> parent = value.getClass();
+        List<Class<?>> interfaces = new ArrayList<>();
+        while (null != parent) {
+            interfaces.addAll(asList(parent.getInterfaces()));
+            parent = parent.getSuperclass();
+        }
+        return interfaces;
     }
 
 }

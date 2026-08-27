@@ -15,7 +15,12 @@
  */
 package buckelieg.validation;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -206,6 +211,96 @@ public enum Iterables {
             Collection<E> collection = toStream(values).collect(toList());
             return collection.size() == new HashSet<>(collection).size();
         };
+    }
+
+    /**
+     * Checks if provided <code>value</code> is contained by a <code>filter</code> collection
+     *
+     * @param filter a collection of values to be validated value validated against
+     * @param <T>    a value type
+     * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
+     */
+    public static <T> Predicate<T> in(Iterable<T> filter) {
+        return value -> toStream(filter).anyMatch(v -> Objects.equals(value, v));
+    }
+
+    /**
+     * Checks if provided <code>value</code> belongs to specified values
+     *
+     * @param filter a collection of values to be validated value validated against
+     * @param <T>    a value type
+     * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
+     */
+    @SafeVarargs
+    public static <T> Predicate<T> in(T... filter) {
+        return value -> Arrays.asList(filter).contains(value);
+    }
+
+    /**
+     * Checks if provided <code>value</code> is contained by <code>filter</code> {@linkplain Stream} of values
+     *
+     * @param filter a collection of values to be validated value validated against
+     * @param <T>    a value type
+     * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
+     */
+    public static <T> Predicate<T> in(Stream<T> filter) {
+        return value -> filter.anyMatch(v -> Objects.equals(value, v));
+    }
+
+    /**
+     * Checks whether provided element is contained by <code>filter</code> {@linkplain Enumeration} of values
+     *
+     * @param filter an enumerated value list
+     * @param <T>    element type
+     * @return a {@linkplain Predicate} instance
+     */
+    public static <T> Predicate<T> in(Enumeration<T> filter) {
+        return in(toStream(filter));
+    }
+
+    /**
+     * Checks if provided <code>value</code> is NOT contained by <code>filter</code> collection
+     *
+     * @param filter a collection of values to be validated value validated against
+     * @param <T>    a value type
+     * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
+     */
+    public static <T> Predicate<T> notIn(Iterable<T> filter) {
+        return value -> toStream(filter).noneMatch(v -> Objects.equals(value, v));
+    }
+
+    /**
+     * Checks if provided <code>value</code> is NOT contained by <code>filter</code> stream of values
+     *
+     * @param filter a collection of values to be validated value validated against
+     * @param <T>    a value type
+     * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
+     */
+    public static <T> Predicate<T> notIn(Stream<T> filter) {
+        return value -> filter.noneMatch(v -> Objects.equals(value, v));
+    }
+
+    /**
+     * Checks if provided <code>value</code> is NOT contained in provided values
+     *
+     * @param filter a collection of values to be validated value validated against
+     * @param <T>    a value type
+     * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
+     */
+    @SafeVarargs
+    public static <T> Predicate<T> notIn(T... filter) {
+        return value -> Stream.of(filter).noneMatch(v -> Objects.equals(value, v));
+    }
+
+    /**
+     * Checks whether provided element is NOT contained by <code>filter</code> {@linkplain Enumeration} of values
+     *
+     * @param filter an enumerated value list
+     * @param <T>    element type
+     * @return a {@linkplain Predicate} instance
+     */
+    public static <T> Predicate<T> notIn(Enumeration<T> filter) {
+        return notIn(toStream(filter));
     }
 
 }
