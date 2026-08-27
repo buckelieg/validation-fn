@@ -92,6 +92,7 @@ Person person3 = new Person("FirstName", "SecondName", "LastName", 76, address1,
 Person person4 = new Person("FirstName", "SecondName", "LastName", -76);
 Person person5 = new Person("First", "SecondName", "LastName", 76);
 ```
+```java
 Validator<Person> validator = Validators.<Person>notNull("Person must be provided")
                 .thenMap( // unconditionally validating person object field of 'firstName'
                         Person::getFirstName,
