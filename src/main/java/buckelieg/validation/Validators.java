@@ -154,7 +154,8 @@ public enum Validators {
      * @throws NullPointerException if any argument is null
      */
     public static <T> Validator<T> notNull(Supplier<String> messageSupplier) {
-        return ofPredicate(Objects::isNull, requireNonNull(messageSupplier, "Error message supplier must be provided").get());
+        Supplier<String> supplier = requireNonNull(messageSupplier, "Error message supplier must be provided");
+        return ofPredicate(Objects::isNull, value -> supplier.get());
     }
 
     /**
@@ -188,7 +189,8 @@ public enum Validators {
      * @throws NullPointerException if <code>messageSupplier</code> is null
      */
     public static <T> Validator<T> isNull(Supplier<String> messageSupplier) {
-        return ofPredicate(Objects::nonNull, requireNonNull(messageSupplier, "Error message supplier must be provided").get());
+        Supplier<String> supplier = requireNonNull(messageSupplier, "Error message supplier must be provided");
+        return ofPredicate(Objects::nonNull, value -> supplier.get());
     }
 
     /**

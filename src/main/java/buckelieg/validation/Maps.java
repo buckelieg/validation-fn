@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Utility class consisting of map-related predicates
  */
@@ -73,6 +75,7 @@ public enum Maps {
      * @see Map#size()
      */
     public static <K, V> Predicate<Map<K, V>> sizeOf(int size) {
+        if (size < 0) throw new IllegalArgumentException("Size must be greater than or equal to zero");
         return map -> map.size() == size;
     }
 
@@ -86,7 +89,8 @@ public enum Maps {
      * @return a {@linkplain Predicate} instance
      */
     public static <K, V> Predicate<Map<K, V>> keyValue(K key, Predicate<V> predicate) {
-        return map -> predicate.test(map.get(key));
+        Predicate<V> valuePredicate = requireNonNull(predicate, "Predicate must be provided");
+        return map -> valuePredicate.test(map.get(key));
     }
 
     /**

@@ -65,6 +65,7 @@ public enum Predicates {
    * @return a {@linkplain Predicate} instance
    */
   public static <T extends Comparable<T>> Predicate<T> gt(T measure) {
+	requireNonNull(measure, "Measure must be provided");
 	return value -> value.compareTo(measure) > 0;
   }
 
@@ -76,6 +77,7 @@ public enum Predicates {
    * @return a {@linkplain Predicate} instance
    */
   public static <T extends Comparable<T>> Predicate<T> lt(T measure) {
+	requireNonNull(measure, "Measure must be provided");
 	return value -> value.compareTo(measure) < 0;
   }
 
@@ -87,6 +89,7 @@ public enum Predicates {
    * @return a {@linkplain Predicate} instance
    */
   public static <T extends Comparable<T>> Predicate<T> eq(T measure) {
+	requireNonNull(measure, "Measure must be provided");
 	return value -> value.compareTo(measure) == 0;
   }
 
@@ -98,6 +101,7 @@ public enum Predicates {
    * @return a {@linkplain Predicate} instance
    */
   public static <T extends Comparable<T>> Predicate<T> ge(T measure) {
+	requireNonNull(measure, "Measure must be provided");
 	return value -> value.compareTo(measure) >= 0;
   }
 
@@ -109,6 +113,7 @@ public enum Predicates {
    * @return a {@linkplain Predicate} instance
    */
   public static <T extends Comparable<T>> Predicate<T> le(T measure) {
+	requireNonNull(measure, "Measure must be provided");
 	return value -> value.compareTo(measure) <= 0;
   }
 
@@ -119,8 +124,8 @@ public enum Predicates {
      * @param <T>    a value type
      * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
      */
-    public static <T extends Comparable<T>> Predicate<T> in(Collection<T> filter) {
-        return filter::contains;
+    public static <T> Predicate<T> in(Collection<T> filter) {
+        return requireNonNull(filter, "Collection must be provided")::contains;
     }
 
     /**
@@ -131,8 +136,9 @@ public enum Predicates {
      * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
      */
     @SafeVarargs
-    public static <T extends Comparable<T>> Predicate<T> in(T... filter) {
-        return value -> Arrays.asList(filter).contains(value);
+    public static <T> Predicate<T> in(T... filter) {
+        T[] values = Arrays.copyOf(requireNonNull(filter, "Values must be provided"), filter.length);
+        return value -> Arrays.asList(values).contains(value);
     }
 
     /**
@@ -142,7 +148,7 @@ public enum Predicates {
      * @param <T>    a value type
      * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
      */
-    public static <T extends Comparable<T>> Predicate<T> in(Stream<T> filter) {
+    public static <T> Predicate<T> in(Stream<T> filter) {
         return in(requireNonNull(filter, "Stream must be provided").collect(toList()));
     }
 
@@ -153,7 +159,7 @@ public enum Predicates {
      * @param <T>    element type
      * @return a {@linkplain Predicate} instance
      */
-    public static <T extends Comparable<T>> Predicate<T> in(Enumeration<T> filter) {
+    public static <T> Predicate<T> in(Enumeration<T> filter) {
         return in(toStream(filter));
     }
 
@@ -164,7 +170,8 @@ public enum Predicates {
      * @param <T>    a value type
      * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
      */
-    public static <T extends Comparable<T>> Predicate<T> notIn(Collection<T> filter) {
+    public static <T> Predicate<T> notIn(Collection<T> filter) {
+        requireNonNull(filter, "Collection must be provided");
         return value -> filter.stream().noneMatch(v -> Objects.equals(value, v));
     }
 
@@ -175,7 +182,7 @@ public enum Predicates {
      * @param <T>    a value type
      * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
      */
-    public static <T extends Comparable<T>> Predicate<T> notIn(Stream<T> filter) {
+    public static <T> Predicate<T> notIn(Stream<T> filter) {
         return notIn(requireNonNull(filter, "Stream must be provided").collect(toList()));
     }
 
@@ -187,8 +194,9 @@ public enum Predicates {
      * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
      */
     @SafeVarargs
-    public static <T extends Comparable<T>> Predicate<T> notIn(T... filter) {
-        return value -> Stream.of(filter).noneMatch(v -> Objects.equals(value, v));
+    public static <T> Predicate<T> notIn(T... filter) {
+        T[] values = Arrays.copyOf(requireNonNull(filter, "Values must be provided"), filter.length);
+        return value -> Stream.of(values).noneMatch(v -> Objects.equals(value, v));
     }
 
     /**
@@ -198,7 +206,7 @@ public enum Predicates {
      * @param <T>    element type
      * @return a {@linkplain Predicate} instance
      */
-    public static <T extends Comparable<T>> Predicate<T> notIn(Enumeration<T> filter) {
+    public static <T> Predicate<T> notIn(Enumeration<T> filter) {
         return notIn(toStream(filter));
     }
 

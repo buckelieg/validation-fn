@@ -28,6 +28,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class HelperPredicatesTest {
@@ -41,6 +42,13 @@ public class HelperPredicatesTest {
         assertFalse(outside.test(1));
         assertFalse(outside.test(5));
         assertFalse(outside.test(10));
+    }
+
+    @Test
+    public void rangesRejectReversedBoundaries() {
+        assertThrows(IllegalArgumentException.class, () -> Ranges.inside(10, 1));
+        assertThrows(IllegalArgumentException.class, () -> Ranges.outside(10, 1));
+        assertThrows(IllegalArgumentException.class, () -> Ranges.strictInside(10, 1));
     }
 
     @Test
@@ -79,5 +87,27 @@ public class HelperPredicatesTest {
         assertFalse(notIn.test(1));
         assertFalse(notIn.test(2));
         assertTrue(notIn.test(3));
+    }
+
+    @Test
+    public void iterableStreamPredicatesCanBeReused() {
+        Predicate<Integer> in = Iterables.in(Stream.of(1, 2));
+        Predicate<Integer> notIn = Iterables.notIn(Stream.of(1, 2));
+
+        assertTrue(in.test(1));
+        assertTrue(in.test(2));
+        assertFalse(in.test(3));
+        assertFalse(notIn.test(1));
+        assertFalse(notIn.test(2));
+        assertTrue(notIn.test(3));
+    }
+
+    @Test
+    public void uniqueMeansAtMostOneOccurrence() {
+        Predicate<List<Integer>> unique = Iterables.isUnique(1);
+
+        assertTrue(unique.test(Collections.emptyList()));
+        assertTrue(unique.test(Arrays.asList(1, 2)));
+        assertFalse(unique.test(Arrays.asList(1, 1, 2)));
     }
 }

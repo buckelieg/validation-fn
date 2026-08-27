@@ -1,34 +1,42 @@
-[![build](https://github.com/buckelieg/validation-fn/workflows/build/badge.svg?branch=master)]()
-[![license](https://img.shields.io/github/license/buckelieg/validation-fn.svg)](./LICENSE.md)
-[![dist](https://img.shields.io/maven-central/v/com.github.buckelieg/validation-fn.svg)](http://mvnrepository.com/artifact/com.github.buckelieg/validation-fn)
+[![build](https://github.com/buckelieg/validation-fn/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/buckelieg/validation-fn/actions/workflows/build.yml)
+[![license](https://img.shields.io/github/license/buckelieg/validation-fn.svg)](./LICENSE)
+[![dist](https://img.shields.io/maven-central/v/com.github.buckelieg/validation-fn.svg)](https://central.sonatype.com/artifact/com.github.buckelieg/validation-fn)
 [![javadoc](https://javadoc.io/badge2/com.github.buckelieg/validation-fn/javadoc.svg)](https://javadoc.io/doc/com.github.buckelieg/validation-fn)
+
 # validation-fn
+
 Functional style validation for Java
 
 ## Quick reference
 
-Add maven dependency:
-```
+Add the Maven dependency:
+
+```xml
 <dependency>
   <groupId>com.github.buckelieg</groupId>
   <artifactId>validation-fn</artifactId>
-  <version>0.2</version>
+  <version>0.3</version>
 </dependency>
 ```
-There no transitive dependencies
+The library has no runtime dependencies.
+
+Validation predicates describe invalid states: when a predicate returns `true`, the validator throws a `ValidationException`. This makes validation rules read as a list of failure conditions.
 
 ### Simple validators
 
 ```java
 Validator<Integer> validator = Validators.<Integer>notNull("Value must not be null")
-                                        .then(Predicates.<Integer>notIn(20, 789, 1001), v -> String.format("Value of '%s' must be one of:  [20, 789, 1001]", v));
-// then constructed validator is used to validate an arbitrary values:
-Integer value = validator.validate(null); // throws: "Value must not be null"
-int value = validator.validate(8); // throws: "Value of '8' must be one of:  [20, 789, 1001]"
+        .then(Predicates.<Integer>notIn(20, 789, 1001),
+                value -> String.format("Value '%s' must be one of [20, 789, 1001]", value));
+
+Integer nullValue = validator.validate(null); // throws: "Value must not be null"
+int invalidValue = validator.validate(8); // throws: "Value '8' must be one of [20, 789, 1001]"
 ```
 
 ### Complex validators
-Consider we have the next domain model:
+
+Consider the following domain model:
+
 ```java
 public class Address {
 
@@ -45,7 +53,7 @@ public class Address {
     public Address() {
     }
 
-    // getters and setters are dropped for sanity
+    // getters and setters omitted
 }
 public class Person {
 
@@ -67,15 +75,12 @@ public class Person {
     public Person() {
     }
     
-    // getters and setter are dropped for sanity
+    // getters and setters omitted
 }
 ```
-User might have a couple of addresses (or might have none) and gender is optional to specify.
-This structure somehow brought to our service (e.g. in Data Transfer Object or smth) and it is needed to validated.
-Here we have some optional validation paths which must be executed only if corresponding data exists.
-Therefore, if validated person has no address - we skip those validation checks for address, but
-if some address is present - we must check it for correctness.
-Let's take a look to a code which will show us how it would be done using this library:
+
+Addresses and gender are optional. When an address is present, each of its fields must be valid:
+
 ```java
 // Our potential addresses
 Address address1 = new Address("MyCity", "MyStreet", 13);
@@ -87,8 +92,6 @@ Person person3 = new Person("FirstName", "SecondName", "LastName", 76, address1,
 Person person4 = new Person("FirstName", "SecondName", "LastName", -76);
 Person person5 = new Person("First", "SecondName", "LastName", 76);
 ```
-Ok, now we ready to write our validator for those test data:
-```java
 Validator<Person> validator = Validators.<Person>notNull("Person must be provided")
                 .thenMap( // unconditionally validating person object field of 'firstName'
                         Person::getFirstName,
@@ -113,30 +116,23 @@ Validator<Person> validator = Validators.<Person>notNull("Person must be provide
                 )
                 .thenMap(
                         Person::getAddresses, // validating address collection
-                        Validators.eachOf(Validators.<Address>notNull("Address must not be null")
+                        Validators.ifNotNull(Validators.eachOf(Validators.<Address>notNull("Address must not be null")
                             .thenMap(Address::getCity, Strings::isBlank, "City must not be blank")
                             .thenMap(Address::getStreet, Strings::isBlank, "Street must not be blank")
                             .thenMap(Address::getBuildingNumber, Numbers::isNegative, "Build number must be positive")
-                        )
+                        ))
                 )
-                /**
-                 * We are free to implement our validators as we desire. For example if we want to validate address at once - we might write the validator like this:
-                 * 
-                 *.thenMap(Person::getAddresses, Validators.eachOf(Validators.<Address>notNull().then(
-                 *  addr -> Strings.isBlank(addr.getCity()) || Strings.isBlank(addr.getStreet()) || Numbers.isNegative(addr.getBuildingNumber()),
-                 *  addr -> String.format("Address of '%s' must be fully filled in", addr) // if Address.toString() method is implemented fine we obtain reasonable error description
-                 *)))
-                 * 
-                 */
                 .thenMap(
                         Person::getGender, // field 'gender' is optional, so we validating it only if the value is present
-                        Validators.ifPresent( // construct predicate that validates on existing value (i.e. optional object is not null and not empty) - if it is - undegroing validation is not performed
-                              Strings::isBlank, // test redicate 
+                        Validators.ifPresent( // validate only a present Optional value
+                              Strings::isBlank, // validation predicate
                               "Gender must not be blank" // error message
                         )
                 );
 ```
-At this stage we are ready to validate our data:
+
+The same validator can be reused for multiple values:
+
 ```java
 validator.validate(person1); // throws nothing
 validator.validate(person2); // throws nothing
@@ -145,20 +141,23 @@ validator.validate(person4); // throws ValidationException with message of "Age 
 validator.validate(person5); // throws ValidationException with message of "FirstName 'First' must not be null and at least 6 characters long" since it is 5 characters long
 ```
 ### Helper classes
-There are some helper classes that makes writing code shorter and easier, these are:
-+ Validators - shortcut methods to use Validator
-+ Predicates - generic purpose predicates
-+ Iterables - predicate collection for iterables
-+ Strings - predicate collection for strings
-+ Dates - predicate collection for dates
-+ Numbers - predicate collection for numbers
-+ Maps - predicate collection related to maps
-+ Classes - a collection of predicates that relates to classes and interfaces
 
-These are subject to extension. 
+- `Validators` — factories and composition helpers for validators.
+- `Predicates` — general-purpose predicates.
+- `Iterables` — predicates for iterable values.
+- `Strings` — string predicates.
+- `Numbers` — numeric predicates.
+- `Maps` — map predicates.
+- `Classes` — class, array, and interface predicates.
 
-### Prerequisites
-Java8, Maven.
+### Building
+
+Java 8 or newer and Maven 3.6.3 or newer are required.
+
+```shell
+mvn verify
+```
 
 ## License
-This project licensed under Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details
+
+This project is licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.

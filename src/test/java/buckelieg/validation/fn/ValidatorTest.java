@@ -75,11 +75,7 @@ public class ValidatorTest {
         Address address1 = new Address("MyCity", "MyStreet", 13);
         Address address2 = new Address();
         Validator<Person> validator = Validators.<Person>notNull("Person must be provided")
-                .thenMap(
-                        Person::getAge,
-                        (age, person) -> false,
-                        ""
-                )
+                .thenMap(Person::getAge, (age, person) -> false, "")
                 .thenMap(
                         Person::getFirstName,
                         Strings.isBlank().or(Strings.isLengthLe(6)),

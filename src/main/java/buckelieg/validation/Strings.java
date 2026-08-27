@@ -9,12 +9,13 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WINHOUN WARRANNIES OR CONDINIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package buckelieg.validation;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -34,6 +35,16 @@ public enum Strings {
 
     ;
 
+    private static String[] validatedValues(String... values) {
+        requireNonNull(values, "String values must be provided");
+        return Stream.of(values)
+                .map(value -> requireNonNull(value, "String value must be provided"))
+                .toArray(String[]::new);
+    }
+
+    private static String lowerCase(String value) {
+        return requireNonNull(value, "String value must be provided").toLowerCase(Locale.ROOT);
+    }
 
     /**
      * Checks if provided value is an enumeration value
@@ -65,7 +76,8 @@ public enum Strings {
      * @see String#contains(CharSequence)
      */
     public static Predicate<String> containsAll(String... values) {
-        return value -> Stream.of(values).allMatch(value::contains);
+        String[] parts = validatedValues(values);
+        return value -> Stream.of(parts).allMatch(value::contains);
     }
 
     /**
@@ -77,9 +89,10 @@ public enum Strings {
      * @see String#contains(CharSequence)
      */
     public static Predicate<String> containsAllIgnoreCase(String... values) {
+        String[] parts = Stream.of(validatedValues(values)).map(Strings::lowerCase).toArray(String[]::new);
         return value -> {
-            String lowerValue = value.toLowerCase();
-            return Stream.of(values).map(String::toLowerCase).allMatch(lowerValue::contains);
+            String lowerValue = lowerCase(value);
+            return Stream.of(parts).allMatch(lowerValue::contains);
         };
     }
 
@@ -92,7 +105,8 @@ public enum Strings {
      * @see String#contains(CharSequence)
      */
     public static Predicate<String> containsNone(String... values) {
-        return value -> Stream.of(values).noneMatch(value::contains);
+        String[] parts = validatedValues(values);
+        return value -> Stream.of(parts).noneMatch(value::contains);
     }
 
     /**
@@ -104,9 +118,10 @@ public enum Strings {
      * @see String#contains(CharSequence)
      */
     public static Predicate<String> containsNoneIgnoreCase(String... values) {
+        String[] parts = Stream.of(validatedValues(values)).map(Strings::lowerCase).toArray(String[]::new);
         return value -> {
-            String lowerValue = value.toLowerCase();
-            return Stream.of(values).map(String::toLowerCase).noneMatch(lowerValue::contains);
+            String lowerValue = lowerCase(value);
+            return Stream.of(parts).noneMatch(lowerValue::contains);
         };
     }
 
@@ -119,7 +134,8 @@ public enum Strings {
      * @see String#contains(CharSequence)
      */
     public static Predicate<String> containsAny(String... values) {
-        return value -> Stream.of(values).anyMatch(value::contains);
+        String[] parts = validatedValues(values);
+        return value -> Stream.of(parts).anyMatch(value::contains);
     }
 
     /**
@@ -131,9 +147,10 @@ public enum Strings {
      * @see String#contains(CharSequence)
      */
     public static Predicate<String> containsAnyIgnoreCase(String... values) {
+        String[] parts = Stream.of(validatedValues(values)).map(Strings::lowerCase).toArray(String[]::new);
         return value -> {
-            String lowerValue = value.toLowerCase();
-            return Stream.of(values).map(String::toLowerCase).anyMatch(lowerValue::contains);
+            String lowerValue = lowerCase(value);
+            return Stream.of(parts).anyMatch(lowerValue::contains);
         };
     }
 
@@ -146,7 +163,8 @@ public enum Strings {
      * @see String#contains(CharSequence)
      */
     public static Predicate<String> containsOne(String... values) {
-        return value -> Stream.of(values).filter(value::contains).count() == 1;
+        String[] parts = validatedValues(values);
+        return value -> Stream.of(parts).filter(value::contains).count() == 1;
     }
 
     /**
@@ -158,9 +176,10 @@ public enum Strings {
      * @see String#contains(CharSequence)
      */
     public static Predicate<String> containsOneIgnoreCase(String... values) {
+        String[] parts = Stream.of(validatedValues(values)).map(Strings::lowerCase).toArray(String[]::new);
         return value -> {
-            String lowerValue = value.toLowerCase();
-            return Stream.of(values).map(String::toLowerCase).filter(lowerValue::contains).count() == 1;
+            String lowerValue = lowerCase(value);
+            return Stream.of(parts).filter(lowerValue::contains).count() == 1;
         };
     }
 
@@ -172,7 +191,8 @@ public enum Strings {
      * @see String#contains(CharSequence)
      */
     public static Predicate<String> contains(String part) {
-        return value -> value.contains(part);
+        String expected = requireNonNull(part, "String part must be provided");
+        return value -> value.contains(expected);
     }
 
     /**
@@ -183,7 +203,8 @@ public enum Strings {
      * @see String#contains(CharSequence)
      */
     public static Predicate<String> containsIgnoreCase(String part) {
-        return value -> value.toLowerCase().contains(part.toLowerCase());
+        String expected = lowerCase(part);
+        return value -> lowerCase(value).contains(expected);
     }
 
     /**
@@ -195,7 +216,8 @@ public enum Strings {
      * @see String#endsWith(String)
      */
     public static Predicate<String> endsWith(String ending) {
-        return value -> value.endsWith(ending);
+        String expected = requireNonNull(ending, "String ending must be provided");
+        return value -> value.endsWith(expected);
     }
 
     /**
@@ -207,7 +229,8 @@ public enum Strings {
      * @see String#endsWith(String)
      */
     public static Predicate<String> endsWithIgnoreCase(String ending) {
-        return value -> value.toLowerCase().endsWith(ending.toLowerCase());
+        String expected = lowerCase(ending);
+        return value -> lowerCase(value).endsWith(expected);
     }
 
     /**
@@ -219,7 +242,8 @@ public enum Strings {
      * @see String#startsWith(String)
      */
     public static Predicate<String> startsWith(String starting) {
-        return value -> value.startsWith(starting);
+        String expected = requireNonNull(starting, "String start must be provided");
+        return value -> value.startsWith(expected);
     }
 
     /**
@@ -231,7 +255,8 @@ public enum Strings {
      * @see String#startsWith(String)
      */
     public static Predicate<String> startsWithIgnoreCase(String starting) {
-        return value -> value.toLowerCase().startsWith(starting.toLowerCase());
+        String expected = lowerCase(starting);
+        return value -> lowerCase(value).startsWith(expected);
     }
 
     /**
@@ -241,7 +266,7 @@ public enum Strings {
      * @return true - if provided value is an UPPER-cased string<br/>false - otherwise
      */
     public static boolean isUpper(String value) {
-        return Objects.equals(value, value.toUpperCase());
+        return Objects.equals(value, value.toUpperCase(Locale.ROOT));
     }
 
     /**
@@ -251,7 +276,7 @@ public enum Strings {
      * @return true - if provided value is a LOWER-cased string<br/>false - otherwise
      */
     public static boolean isLower(String value) {
-        return Objects.equals(value, value.toLowerCase());
+        return Objects.equals(value, value.toLowerCase(Locale.ROOT));
     }
 
     /**
@@ -351,7 +376,7 @@ public enum Strings {
      * @see String#matches(String)
      */
     public static Predicate<String> matches(String pattern) {
-        return value -> value.matches(pattern);
+        return matches(Pattern.compile(requireNonNull(pattern, "Pattern must be provided")));
     }
 
     /**

@@ -9,7 +9,7 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WINHOUN WARRANNIES OR CONDINIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -42,7 +42,7 @@ public enum Iterables {
      * @param <E>  a collection element type
      * @param <I>  a collection type
      * @return a {@linkplain Predicate} instance
-     * @throws IllegalArgumentException if <code>size</code> < 0
+     * @throws IllegalArgumentException if <code>size</code> &lt; 0
      * @see Stream#count()
      */
     public static <E, I extends Iterable<E>> Predicate<I> sizeOf(long size) {
@@ -147,7 +147,7 @@ public enum Iterables {
      * @param <I>       a collection type
      * @return a {@linkplain Predicate} instance
      * @throws NullPointerException     if <code>predicate</code> is null
-     * @throws IllegalArgumentException if <code>count</code> < 0
+     * @throws IllegalArgumentException if <code>count</code> &lt; 0
      * @see #countOf(Predicate, Predicate)
      */
     public static <E, I extends Iterable<E>> Predicate<I> countEq(Predicate<E> predicate, long count) {
@@ -195,7 +195,7 @@ public enum Iterables {
      * @see Objects#equals(Object, Object)
      */
     public static <E, I extends Iterable<E>> Predicate<I> isUnique(E value) {
-        return oneOf(element -> Objects.equals(value, element));
+        return countOf(element -> Objects.equals(value, element), Predicates.le(1L));
     }
 
     /**
@@ -221,7 +221,8 @@ public enum Iterables {
      * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
      */
     public static <T> Predicate<T> in(Iterable<T> filter) {
-        return value -> toStream(filter).anyMatch(v -> Objects.equals(value, v));
+        Collection<T> values = toStream(requireNonNull(filter, "Collection must be provided")).collect(toList());
+        return values::contains;
     }
 
     /**
@@ -233,7 +234,8 @@ public enum Iterables {
      */
     @SafeVarargs
     public static <T> Predicate<T> in(T... filter) {
-        return value -> Arrays.asList(filter).contains(value);
+        T[] values = Arrays.copyOf(requireNonNull(filter, "Values must be provided"), filter.length);
+        return value -> Arrays.asList(values).contains(value);
     }
 
     /**
@@ -244,7 +246,7 @@ public enum Iterables {
      * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
      */
     public static <T> Predicate<T> in(Stream<T> filter) {
-        return value -> filter.anyMatch(v -> Objects.equals(value, v));
+        return in(requireNonNull(filter, "Stream must be provided").collect(toList()));
     }
 
     /**
@@ -266,7 +268,8 @@ public enum Iterables {
      * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
      */
     public static <T> Predicate<T> notIn(Iterable<T> filter) {
-        return value -> toStream(filter).noneMatch(v -> Objects.equals(value, v));
+        Collection<T> values = toStream(requireNonNull(filter, "Collection must be provided")).collect(toList());
+        return value -> !values.contains(value);
     }
 
     /**
@@ -277,7 +280,7 @@ public enum Iterables {
      * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
      */
     public static <T> Predicate<T> notIn(Stream<T> filter) {
-        return value -> filter.noneMatch(v -> Objects.equals(value, v));
+        return notIn(requireNonNull(filter, "Stream must be provided").collect(toList()));
     }
 
     /**
@@ -289,7 +292,8 @@ public enum Iterables {
      */
     @SafeVarargs
     public static <T> Predicate<T> notIn(T... filter) {
-        return value -> Stream.of(filter).noneMatch(v -> Objects.equals(value, v));
+        T[] values = Arrays.copyOf(requireNonNull(filter, "Values must be provided"), filter.length);
+        return value -> Stream.of(values).noneMatch(v -> Objects.equals(value, v));
     }
 
     /**

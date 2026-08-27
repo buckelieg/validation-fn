@@ -18,7 +18,9 @@ package buckelieg.validation;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.IntPredicate;
@@ -28,7 +30,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
 enum Utils {
@@ -56,7 +57,9 @@ enum Utils {
     }
 
     static boolean allCharactersMatch(String value, IntPredicate predicate) {
-        return value.chars().allMatch(predicate);
+        requireNonNull(value, "String value must be provided");
+        requireNonNull(predicate, "Character predicate must be provided");
+        return !value.isEmpty() && value.chars().allMatch(predicate);
     }
 
     static <T> Stream<T> toStream(Enumeration<T> enumeration) {
@@ -71,17 +74,23 @@ enum Utils {
             public T next() {
                 return enumeration.nextElement();
             }
-        }, Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.SIZED), false);
+        }, Spliterator.ORDERED | Spliterator.IMMUTABLE), false);
     }
 
     static <T> List<Class<?>> allInterfaces(T value) {
-        Class<?> parent = value.getClass();
-        List<Class<?>> interfaces = new ArrayList<>();
-        while (null != parent) {
-            interfaces.addAll(asList(parent.getInterfaces()));
-            parent = parent.getSuperclass();
+        requireNonNull(value, "Value must be provided");
+        Class<?> type = value instanceof Class<?> ? (Class<?>) value : value.getClass();
+        Set<Class<?>> interfaces = new LinkedHashSet<>();
+        collectInterfaces(type, interfaces);
+        return new ArrayList<>(interfaces);
+    }
+
+    private static void collectInterfaces(Class<?> type, Set<Class<?>> interfaces) {
+        if (null == type) return;
+        for (Class<?> interfaceType : type.getInterfaces()) {
+            if (interfaces.add(interfaceType)) collectInterfaces(interfaceType, interfaces);
         }
-        return interfaces;
+        collectInterfaces(type.getSuperclass(), interfaces);
     }
 
 }

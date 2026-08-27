@@ -9,7 +9,7 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WINHOUN WARRANNIES OR CONDINIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -31,21 +31,37 @@ public enum Classes {
 
   ;
 
+  private static Class<?> valueType(Object value) {
+	requireNonNull(value, "Value must be provided");
+	return value instanceof Class<?> ? (Class<?>) value : value.getClass();
+  }
+
+  private static List<Class<?>> interfaceTypes(Class<?>... classes) {
+	requireNonNull(classes, "Interface types must be provided");
+	return Arrays.stream(classes).map(clazz -> {
+	  requireNonNull(clazz, "Interface type must be provided");
+	  if (!clazz.isInterface()) {
+		throw new IllegalArgumentException(clazz.getName() + " is not an interface");
+	  }
+	  return clazz;
+    }).collect(Collectors.toList());
+  }
+
   /**
-   * Test if provided value type (class) belongs to particular one
+   * Checks whether a value is an instance of the provided type.
    *
    * @param clazz a target type of the value to test against
    * @param <T>   value type
    * @return a {@linkplain Predicate} instance
-   * @see Class#isAssignableFrom(Class)
+   * @see Class#isInstance(Object)
    */
   public static <T> Predicate<T> isOfType(Class<T> clazz) {
 	requireNonNull(clazz, "Class must be provided");
-	return value -> clazz.isAssignableFrom(value.getClass());
+	return clazz::isInstance;
   }
 
   /**
-   * Test if provided value type (class) belongs to particular one
+   * Checks whether a value has exactly the provided runtime type.
    *
    * @param clazz a target type of the value to test against
    * @param <T>   value type
@@ -53,10 +69,12 @@ public enum Classes {
    */
   public static <T> Predicate<T> isExact(Class<T> clazz) {
 	requireNonNull(clazz, "Class must be provided");
-	return value -> Objects.equals(value.getClass(), clazz);
+	return value -> null != value && Objects.equals(valueType(value), clazz);
   }
 
   /**
+   * Checks whether a value is an instance of the provided type.
+   *
    * @param clazz a target type of the value to test against
    * @param <T>   value type
    * @return a {@linkplain Predicate} instance
@@ -68,17 +86,20 @@ public enum Classes {
   }
 
   /**
+   * Checks whether a value or class token represents an array type.
    *
-   * @param value
+   * @param value a value or class token
    * @param <T> value type
-   * @return a {@linkplain Predicate} instance
+   * @return true if the represented type is an array
    * @see Class#isArray()
    */
   public static <T> boolean isArray(T value) {
-	return value.getClass().isArray();
+	return null != value && valueType(value).isArray();
   }
 
   /**
+   * Returns a predicate that checks whether a value or class token represents an array type.
+   *
    * @param <T> value type
    * @return a {@linkplain Predicate} instance
    */
@@ -87,31 +108,34 @@ public enum Classes {
   }
 
   /**
+   * Returns a predicate that checks whether an array component is assignable to the provided type.
    *
-   * @param clazz
-   * @param <T> value type
+   * @param clazz required array component type
    * @return a {@linkplain Predicate} instance
    */
-  public static <T> Predicate<T> isArrayOfType(Class<T> clazz) {
+  public static Predicate<Object> isArrayOfType(Class<?> clazz) {
 	requireNonNull(clazz, "Class must be provided");
 	return value -> {
-	  Class<?> valueClass = value.getClass();
-	  return valueClass.isArray() && valueClass.getComponentType().isAssignableFrom(clazz);
+	  if (null == value) return false;
+	  Class<?> valueClass = valueType(value);
+	  return valueClass.isArray() && clazz.isAssignableFrom(valueClass.getComponentType());
 	};
   }
 
   /**
+   * Checks whether a value or class token represents a primitive type.
    *
-   * @param value
+   * @param value a value or class token
    * @param <T> value type
    * @return a {@linkplain Predicate} instance
    * @see Class#isPrimitive()
    */
   public static <T> boolean isPrimitive(T value) {
-	return value.getClass().isPrimitive();
+	return null != value && valueType(value).isPrimitive();
   }
 
   /**
+   * Returns a predicate that checks whether a value or class token represents a primitive type.
    *
    * @return a {@linkplain Predicate} instance
    * @param <T> value type
@@ -121,17 +145,19 @@ public enum Classes {
   }
 
   /**
+   * Checks whether a value or class token represents an interface.
    *
-   * @param value
+   * @param value a value or class token
    * @param <T> value type
    * @return a {@linkplain Predicate} instance
    * @see Class#isInterface()
    */
   public static <T> boolean isInterface(T value) {
-	return value.getClass().isInterface();
+	return null != value && valueType(value).isInterface();
   }
 
   /**
+   * Returns a predicate that checks whether a value or class token represents an interface.
    *
    * @param <T> value type
    * @return a {@linkplain Predicate} instance
@@ -141,51 +167,63 @@ public enum Classes {
   }
 
   /**
+   * Checks whether a value implements the provided interface or one of its subinterfaces.
    *
-   * @param clazz
-   * @return
+   * @param clazz required interface
+   * @return a {@linkplain Predicate} instance
    * @param <T> value type
    */
   public static <T> Predicate<T> hasInterface(Class<?> clazz) {
 	requireNonNull(clazz, "Class must be provided");
-	return value -> Utils.allInterfaces(value).stream().anyMatch(clazz::isAssignableFrom);
+	if (!clazz.isInterface()) throw new IllegalArgumentException(clazz.getName() + " is not an interface");
+	return value -> null != value && Utils.allInterfaces(value).stream().anyMatch(clazz::isAssignableFrom);
   }
 
   /**
+   * Checks whether a value implements every provided interface, including through subinterfaces.
    *
-   * @param classes
-   * @return
+   * @param classes required interfaces
+   * @return a {@linkplain Predicate} instance
    * @param <T> value type
    */
   public static <T> Predicate<T> implementsAll(Class<?>... classes) {
+	List<Class<?>> required = interfaceTypes(classes);
 	return value -> {
-	  List<Class<?>> interfaces = Utils.allInterfaces(value);
-	  List<Class<?>> list = Arrays.stream(classes).filter(Class::isInterface).collect(Collectors.toList());
-	  return new HashSet<>(interfaces).containsAll(list);
+	  if (null == value) return false;
+	  List<Class<?>> implemented = Utils.allInterfaces(value);
+	  return required.stream().allMatch(
+		  requiredType -> implemented.stream().anyMatch(requiredType::isAssignableFrom)
+	  );
 	};
   }
 
   /**
+   * Checks whether a value implements every provided interface by exact interface type.
    *
-   * @param classes
-   * @return
+   * @param classes required interfaces
+   * @return a {@linkplain Predicate} instance
    * @param <T> value type
    */
   public static <T> Predicate<T> implementsAllExact(Class<?>... classes) {
-	return null;
+	List<Class<?>> required = interfaceTypes(classes);
+	return value -> null != value && new HashSet<>(Utils.allInterfaces(value)).containsAll(required);
   }
 
   /**
+   * Checks whether a value implements at least one provided interface, including through subinterfaces.
    *
-   * @param classes
-   * @return
+   * @param classes candidate interfaces
+   * @return a {@linkplain Predicate} instance
    * @param <T> value type
    */
   public static <T> Predicate<T> implementsAny(Class<?>... classes) {
+	List<Class<?>> required = interfaceTypes(classes);
 	return value -> {
-	  List<Class<?>> interfaces = Utils.allInterfaces(value);
-	  List<Class<?>> list = Arrays.stream(classes).filter(Class::isInterface).collect(Collectors.toList());
-	  return new HashSet<>(interfaces).containsAll(list);
+	  if (null == value) return false;
+	  List<Class<?>> implemented = Utils.allInterfaces(value);
+	  return required.stream().anyMatch(
+		  requiredType -> implemented.stream().anyMatch(requiredType::isAssignableFrom)
+	  );
 	};
   }
 

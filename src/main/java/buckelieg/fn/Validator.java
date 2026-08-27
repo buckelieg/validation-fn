@@ -150,6 +150,7 @@ public interface Validator<T> {
      * @see Validator#ofPredicate(Predicate, Function)
      */
     static <T> Validator<T> ofPredicate(Predicate<T> predicate, String errorMessage) {
+        requireNonNull(errorMessage, "Error message must be provided");
         return ofPredicate(predicate, value -> errorMessage);
     }
 
