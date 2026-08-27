@@ -45,7 +45,7 @@ public enum Ranges {
    * @return a {@linkplain Predicate} instance
    */
   public static <T extends Number & Comparable<T>> Predicate<T> outside(T from, T to) {
-	return Predicates.lt(from).and(Predicates.gt(to));
+	return Predicates.lt(from).or(Predicates.gt(to));
   }
 
   /**

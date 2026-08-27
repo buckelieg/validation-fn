@@ -92,7 +92,7 @@ Ok, now we ready to write our validator for those test data:
 Validator<Person> validator = Validators.<Person>notNull("Person must be provided")
                 .thenMap( // unconditionally validating person object field of 'firstName'
                         Person::getFirstName,
-                        Predicates.of(Strings::isBlank).or(Strings.minLength(6)), // validation case in the form of java.util.Predicate 
+                        Predicates.of(Strings::isBlank).or(Strings.isLengthLt(6)), // validation case in the form of java.util.Predicate
                         value -> String.format("FirstName '%s' must not be null and at least 6 characters long", value) // error message provider function - the ValidationException message
                 )
                 .thenMap(
@@ -100,7 +100,7 @@ Validator<Person> validator = Validators.<Person>notNull("Person must be provide
                         Validator.<String>of().thenIf(
                                 Predicates.of(Strings::isBlank).negate(), // field validation condition
                                 Validator.ofPredicate( // construct validator from:
-                                        Strings.minLength(6), // validation test case predicate
+                                        Strings.isLengthLt(6), // validation test case predicate
                                         "Minimum second name length is 6" // error message if predicate returns TRUE
                                 )
                         )
@@ -108,7 +108,7 @@ Validator<Person> validator = Validators.<Person>notNull("Person must be provide
                 .thenMap(Person::getLastName, Strings::isBlank, "Last name must not be empty") // unconditionally validating 'lastName'
                 .thenMap(
                         Person::getAge, // validating 'age' field
-                        Predicates.<Integer>of(Numbers::isNegative).or(Numbers.max(100)), // combine predicates with arbitrary conditions to be validated against
+                        Predicates.<Integer>of(Numbers::isNegative).or(Predicates.ge(100)), // combine predicates with arbitrary conditions to be validated against
                         "Age has to be greater than 0 and less than 100" // an error message if we fail
                 )
                 .thenMap(
@@ -161,4 +161,3 @@ Java8, Maven.
 
 ## License
 This project licensed under Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details
-

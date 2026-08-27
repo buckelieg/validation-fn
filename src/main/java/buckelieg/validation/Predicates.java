@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import static buckelieg.validation.Utils.toStream;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
 /**
  * A collection of general purpose predicates with the basic checks
@@ -130,7 +131,7 @@ public enum Predicates {
      * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is contained in a <code>filter</code> collection<br/>false - otherwise
      */
     public static <T extends Comparable<T>> Predicate<T> in(Stream<T> filter) {
-        return value -> filter.anyMatch(v -> Objects.equals(value, v));
+        return in(requireNonNull(filter, "Stream must be provided").collect(toList()));
     }
 
     /**
@@ -163,7 +164,7 @@ public enum Predicates {
      * @return a {@linkplain Predicate} instance which returns:<br/>true - if provided value is NOT contained in a <code>filter</code> collection<br/>false - otherwise
      */
     public static <T extends Comparable<T>> Predicate<T> notIn(Stream<T> filter) {
-        return value -> filter.noneMatch(v -> Objects.equals(value, v));
+        return notIn(requireNonNull(filter, "Stream must be provided").collect(toList()));
     }
 
     /**

@@ -92,11 +92,12 @@ public enum Iterables {
      * @param <I>     a collection type
      * @return a {@linkplain Predicate} instance
      * @throws NullPointerException if argument is null
-     * @see Collections#disjoint(Collection, Collection)
+     * @see Collection#contains(Object)
      */
     public static <E, I extends Iterable<E>> Predicate<I> allOf(I another) {
         requireNonNull(another, "Collection must be provided");
-        return values -> !Collections.disjoint(toStream(values).collect(toList()), toStream(another).collect(toList()));
+        Collection<E> allowedValues = toStream(another).collect(toList());
+        return values -> toStream(values).allMatch(allowedValues::contains);
     }
 
     /**
