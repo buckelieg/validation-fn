@@ -44,28 +44,107 @@ public class ValidatorCompositionTest {
     }
 
     @Test
+    public void explicitFactoriesSeparateValidityFromFailurePredicates() {
+        Predicate<Object> nonNull = value -> value != null;
+        Function<Object, String> requiredMessage = value -> "required:" + value;
+
+        assertEquals("value", Validator.<String>require(nonNull, requiredMessage).validate("value"));
+        assertFailure("required:null", Validator.<String>require(nonNull, requiredMessage), null);
+        assertFailure("required", Validator.require(nonNull, "required"), null);
+
+        assertEquals("value", Validator.<String>rejectIf(String::isEmpty, "empty").validate("value"));
+        assertFailure("empty:", Validator.<String>rejectIf(String::isEmpty, value -> "empty:" + value), "");
+        assertFailure("empty", Validator.rejectIf(String::isEmpty, "empty"), "");
+
+        assertThrows(NullPointerException.class, () -> Validator.require(null, "required"));
+        assertThrows(NullPointerException.class, () -> Validator.require(nonNull, (String) null));
+        assertThrows(NullPointerException.class, () -> Validator.rejectIf(null, "invalid"));
+        assertThrows(NullPointerException.class, () -> Validator.rejectIf(nonNull, (Function<Object, String>) null));
+    }
+
+    @Test
+    public void explicitSequentialMethodsReadInTheirBooleanDirection() {
+        Validator<String> validator = Validator.<String>of()
+                .thenRequire(value -> value.length() >= 3, value -> "short:" + value)
+                .thenRequire(value -> value.length() <= 5, "long")
+                .thenRejectIf(String::isEmpty, value -> "empty:" + value)
+                .thenRejectIf(value -> value.contains("!"), "punctuation");
+
+        assertEquals("valid", validator.validate("valid"));
+        assertFailure("short:ab", validator, "ab");
+        assertFailure("long", validator, "lengthy");
+        assertFailure("punctuation", validator, "bad!");
+    }
+
+    @Test
+    public void explicitMappedMethodsSupportAllMessageAndPredicateShapes() {
+        Function<String, Integer> length = String::length;
+        Predicate<Integer> validLength = value -> value == 4;
+        Predicate<Integer> invalidLength = value -> value == 4;
+        BiPredicate<Integer, String> validPair = (mapped, original) -> mapped == 4 && original.startsWith("t");
+        BiPredicate<Integer, String> invalidPair = (mapped, original) -> mapped == original.length();
+        BiFunction<Integer, String, String> pairMessage = (mapped, original) -> mapped + ":" + original;
+
+        assertFailure("3:abc", Validator.<String>of().thenMapRequire(length, validPair, pairMessage), "abc");
+        assertFailure("mapped:3", Validator.<String>of().thenMapRequire(length, validPair,
+                mapped -> "mapped:" + mapped), "abc");
+        assertFailure("pair-required", Validator.<String>of().thenMapRequire(length, validPair,
+                "pair-required"), "abc");
+        assertFailure("3:abc", Validator.<String>of().thenMapRequire(length, validLength, pairMessage), "abc");
+        assertFailure("mapped:3", Validator.<String>of().thenMapRequire(length, validLength,
+                mapped -> "mapped:" + mapped), "abc");
+        assertFailure("required", Validator.<String>of().thenMapRequire(length, validLength, "required"), "abc");
+
+        assertFailure("4:test", Validator.<String>of().thenMapRejectIf(length, invalidPair, pairMessage), "test");
+        assertFailure("mapped:4", Validator.<String>of().thenMapRejectIf(length, invalidPair,
+                mapped -> "mapped:" + mapped), "test");
+        assertFailure("pair-rejected", Validator.<String>of().thenMapRejectIf(length, invalidPair,
+                "pair-rejected"), "test");
+        assertFailure("4:test", Validator.<String>of().thenMapRejectIf(length, invalidLength, pairMessage), "test");
+        assertFailure("mapped:4", Validator.<String>of().thenMapRejectIf(length, invalidLength,
+                mapped -> "mapped:" + mapped), "test");
+        assertFailure("rejected", Validator.<String>of().thenMapRejectIf(length, invalidLength, "rejected"), "test");
+
+        assertEquals("test", Validator.<String>of().thenMapRequire(length, validPair, pairMessage).validate("test"));
+        assertEquals("test", Validator.<String>of().thenMapRequire(length, validPair,
+                mapped -> "mapped:" + mapped).validate("test"));
+        assertEquals("test", Validator.<String>of().thenMapRequire(length, validPair, "required").validate("test"));
+        assertEquals("test", Validator.<String>of().thenMapRequire(length, validLength, pairMessage).validate("test"));
+        assertEquals("test", Validator.<String>of().thenMapRequire(length, validLength,
+                mapped -> "mapped:" + mapped).validate("test"));
+        assertEquals("test", Validator.<String>of().thenMapRequire(length, validLength, "required").validate("test"));
+        assertEquals("abc", Validator.<String>of().thenMapRejectIf(length, invalidLength, "rejected").validate("abc"));
+        assertThrows(NullPointerException.class,
+                () -> Validator.<String>of().thenMapRequire(length, (Predicate<Integer>) null, "required"));
+        assertThrows(NullPointerException.class,
+                () -> Validator.<String>of().thenMapRejectIf(length, invalidLength, (String) null));
+    }
+
+    @Test
     public void coreFactoriesCollectionAndPredicateAdaptersCoverSuccessAndFailure() {
         Validator<String> identity = Validator.of();
         assertSame(identity, Validator.of(identity));
         assertEquals("value", identity.validate("value"));
 
-        Validator<String> built = Validator.build(validator -> validator.then(String::isEmpty, "empty"));
+        Validator<String> built = Validator.build(validator -> validator.thenRejectIf(String::isEmpty, "empty"));
         assertEquals("value", built.validate("value"));
         assertFailure("empty", built, "");
 
-        Validator<String> suppliedMessage = Validator.ofPredicate(String::isEmpty, value -> "invalid:" + value);
+        Validator<String> suppliedMessage = Validator.rejectIf(String::isEmpty, value -> "invalid:" + value);
         assertFailure("invalid:", suppliedMessage, "");
         assertTrue(suppliedMessage.collect("").isPresent());
         assertFalse(suppliedMessage.collect("value").isPresent());
-        assertTrue(suppliedMessage.toPredicate().test(""));
-        assertFalse(suppliedMessage.toPredicate().test("value"));
+        assertFalse(suppliedMessage.asValidPredicate().test(""));
+        assertTrue(suppliedMessage.asValidPredicate().test("value"));
+        assertTrue(suppliedMessage.asInvalidPredicate().test(""));
+        assertFalse(suppliedMessage.asInvalidPredicate().test("value"));
 
         assertThrows(NullPointerException.class, () -> Validator.of(null));
         assertThrows(NullPointerException.class, () -> Validator.build(null));
         assertThrows(NullPointerException.class, () -> Validator.build(validator -> null));
-        assertThrows(NullPointerException.class, () -> Validator.ofPredicate(null, "error"));
-        assertThrows(NullPointerException.class, () -> Validator.ofPredicate(value -> false, (String) null));
-        assertThrows(NullPointerException.class, () -> Validator.ofPredicate(value -> false, (Function<Object, String>) null));
+        assertThrows(NullPointerException.class, () -> Validator.rejectIf(null, "error"));
+        assertThrows(NullPointerException.class, () -> Validator.rejectIf(value -> false, (String) null));
+        assertThrows(NullPointerException.class, () -> Validator.rejectIf(value -> false, (Function<Object, String>) null));
     }
 
     @Test
@@ -83,81 +162,48 @@ public class ValidatorCompositionTest {
         Validator.<String>of().then(counter).validate("value");
         assertEquals(2, calls.get());
 
-        assertFailure("function:value", Validator.<String>of().then(value -> true, value -> "function:" + value), "value");
-        assertFailure("constant", Validator.<String>of().then(value -> true, "constant"), "value");
+        assertFailure("function:value", Validator.<String>of().thenRejectIf(value -> true, value -> "function:" + value), "value");
+        assertFailure("constant", Validator.<String>of().thenRejectIf(value -> true, "constant"), "value");
         Validator.<String>of().thenIfNotNull(counter).validate(null);
         assertEquals(2, calls.get());
-        assertFailure("nonnull:value", Validator.<String>of().thenIfNotNull(value -> true, value -> "nonnull:" + value), "value");
-        assertFailure("nonnull", Validator.<String>of().thenIfNotNull(value -> true, "nonnull"), "value");
+        assertFailure("nonnull:value", Validator.<String>of().thenIfNotNull(
+                Validator.rejectIf(value -> true, value -> "nonnull:" + value)), "value");
+        assertFailure("nonnull", Validator.<String>of().thenIfNotNull(
+                Validator.rejectIf(value -> true, "nonnull")), "value");
 
         assertThrows(NullPointerException.class, () -> Validator.<String>of().thenIf(null, counter));
         assertThrows(NullPointerException.class, () -> Validator.<String>of().thenIf(value -> true, null));
     }
 
     @Test
-    public void conditionalMappingOverloadsPreserveMappedAndOriginalValues() {
+    public void conditionalMappingUsesExplicitMappedValidator() {
         Function<String, Integer> length = String::length;
         Predicate<Integer> invalidLength = value -> value == 4;
-        BiPredicate<Integer, String> invalidPair = (mapped, original) -> mapped == original.length();
-        BiFunction<Integer, String, String> pairMessage = (mapped, original) -> mapped + ":" + original;
 
         Validator.<String>of().thenMapIf(value -> false, length,
-                Validator.ofPredicate(invalidLength, "skipped")).validate("test");
+                Validator.rejectIf(invalidLength, "skipped")).validate("test");
         assertFailure("mapped-validator", Validator.<String>of().thenMapIf(value -> true, length,
-                Validator.ofPredicate(invalidLength, "mapped-validator")), "test");
-        assertFailure("4:test", Validator.<String>of().thenMapIf(value -> true, length, invalidPair, pairMessage), "test");
-        assertFailure("mapped:4", Validator.<String>of().thenMapIf(value -> true, length, invalidPair,
-                mapped -> "mapped:" + mapped), "test");
-        assertFailure("bi-constant", Validator.<String>of().thenMapIf(value -> true, length, invalidPair,
-                "bi-constant"), "test");
-        assertFailure("4:test", Validator.<String>of().thenMapIf(value -> true, length, invalidLength, pairMessage), "test");
-        assertFailure("mapped:4", Validator.<String>of().thenMapIf(value -> true, length, invalidLength,
-                mapped -> "mapped:" + mapped), "test");
-        assertFailure("predicate-constant", Validator.<String>of().thenMapIf(value -> true, length, invalidLength,
-                "predicate-constant"), "test");
+                Validator.rejectIf(invalidLength, "mapped-validator")), "test");
     }
 
     @Test
-    public void unconditionalMappingOverloadsDelegateToConditionalComposition() {
+    public void validatorBasedMappingDelegatesToMappedValidator() {
         Function<String, Integer> length = String::length;
         Predicate<Integer> invalidLength = value -> value == 4;
-        BiPredicate<Integer, String> invalidPair = (mapped, original) -> mapped == original.length();
-        BiFunction<Integer, String, String> pairMessage = (mapped, original) -> mapped + ":" + original;
 
         assertFailure("mapped-validator", Validator.<String>of().thenMap(length,
-                Validator.ofPredicate(invalidLength, "mapped-validator")), "test");
-        assertFailure("4:test", Validator.<String>of().thenMap(length, invalidPair, pairMessage), "test");
-        assertFailure("mapped:4", Validator.<String>of().thenMap(length, invalidPair,
-                mapped -> "mapped:" + mapped), "test");
-        assertFailure("bi-constant", Validator.<String>of().thenMap(length, invalidPair, "bi-constant"), "test");
-        assertFailure("4:test", Validator.<String>of().thenMap(length, invalidLength, pairMessage), "test");
-        assertFailure("mapped:4", Validator.<String>of().thenMap(length, invalidLength,
-                mapped -> "mapped:" + mapped), "test");
-        assertFailure("predicate-constant", Validator.<String>of().thenMap(length, invalidLength,
-                "predicate-constant"), "test");
+                Validator.rejectIf(invalidLength, "mapped-validator")), "test");
     }
 
     @Test
-    public void nonNullMappingOverloadsSkipNullAndValidatePresentValues() {
+    public void nonNullMappingSkipsNullAndValidatesPresentValues() {
         Function<String, Integer> length = String::length;
         Predicate<Integer> invalidLength = value -> value == 4;
-        BiPredicate<Integer, String> invalidPair = (mapped, original) -> mapped == original.length();
-        BiFunction<Integer, String, String> pairMessage = (mapped, original) -> mapped + ":" + original;
 
         assertEquals(null, Validator.<String>of().thenMapIfNotNull(length,
-                Validator.ofPredicate(invalidLength, "mapped-validator")).validate(null));
+                Validator.rejectIf(invalidLength, "mapped-validator")).validate(null));
         assertFailure("mapped-validator", Validator.<String>of().thenMapIfNotNull(length,
-                Validator.ofPredicate(invalidLength, "mapped-validator")), "test");
-        assertFailure("4:test", Validator.<String>of().thenMapIfNotNull(length, invalidPair, pairMessage), "test");
-        assertFailure("mapped:4", Validator.<String>of().thenMapIfNotNull(length, invalidPair,
-                mapped -> "mapped:" + mapped), "test");
-        assertFailure("bi-constant", Validator.<String>of().thenMapIfNotNull(length, invalidPair,
-                "bi-constant"), "test");
-        assertFailure("4:test", Validator.<String>of().thenMapIfNotNull(length, invalidLength, pairMessage), "test");
-        assertFailure("mapped:4", Validator.<String>of().thenMapIfNotNull(length, invalidLength,
-                mapped -> "mapped:" + mapped), "test");
-        assertFailure("predicate-constant", Validator.<String>of().thenMapIfNotNull(length, invalidLength,
-                "predicate-constant"), "test");
+                Validator.rejectIf(invalidLength, "mapped-validator")), "test");
     }
 
     @Test
@@ -169,44 +215,44 @@ public class ValidatorCompositionTest {
         assertFailure("must-be-null-string", Validators.isNull("must-be-null-string"), "value");
         assertFailure("Provided value must be null", Validators.isNull(), "value");
 
-        Validators.ifPresent(Validator.ofPredicate(String::isEmpty, "empty")).validate(Optional.empty());
-        assertFailure("empty", Validators.ifPresent(String::isEmpty, value -> "empty"), Optional.of(""));
-        assertFailure("empty-constant", Validators.ifPresent(String::isEmpty, "empty-constant"), Optional.of(""));
+        Validators.ifPresent(Validator.rejectIf(String::isEmpty, "empty")).validate(Optional.empty());
+        assertFailure("empty", Validators.ifPresent(
+                Validator.rejectIf(String::isEmpty, value -> "empty")), Optional.of(""));
+        assertFailure("empty-constant", Validators.ifPresent(
+                Validator.rejectIf(String::isEmpty, "empty-constant")), Optional.of(""));
 
-        Validators.ifNotNull(Validator.ofPredicate(String::isEmpty, "empty")).validate(null);
-        assertFailure("empty", Validators.ifNotNull(String::isEmpty, value -> "empty"), "");
-        assertFailure("empty-constant", Validators.ifNotNull(String::isEmpty, "empty-constant"), "");
+        Validators.ifNotNull(Validator.rejectIf(String::isEmpty, "empty")).validate(null);
+        assertFailure("empty", Validators.ifNotNull(
+                Validator.rejectIf(String::isEmpty, value -> "empty")), "");
+        assertFailure("empty-constant", Validators.ifNotNull(
+                Validator.rejectIf(String::isEmpty, "empty-constant")), "");
 
-        Validators.ifNotNullAnd(value -> false, Validator.ofPredicate(value -> true, "skipped")).validate("value");
-        assertFailure("conditional:value", Validators.ifNotNullAnd(value -> true, value -> true,
-                value -> "conditional:" + value), "value");
-        assertFailure("conditional-constant", Validators.ifNotNullAnd(value -> true, value -> true,
-                "conditional-constant"), "value");
-
-        assertFailure("required:", Validators.notNullOr(String::isEmpty, value -> "required:" + value), "");
-        assertFailure("required", Validators.notNullOr(String::isEmpty, "required"), null);
-        Validators.notNullOr(String::isEmpty, "required").validate("value");
+        Validators.ifNotNullAnd(value -> false, Validator.rejectIf(value -> true, "skipped")).validate("value");
+        assertFailure("conditional:value", Validators.ifNotNullAnd(value -> true,
+                Validator.rejectIf(value -> true, value -> "conditional:" + value)), "value");
+        assertFailure("conditional-constant", Validators.ifNotNullAnd(value -> true,
+                Validator.rejectIf(value -> true, "conditional-constant")), "value");
     }
 
     @Test
     public void eachOfFactoriesCoverEveryMessageSupplierShape() {
         List<String> values = Arrays.asList("ok", "");
-        Validator<String> elementValidator = Validator.ofPredicate(String::isEmpty, "element");
+        Validator<String> elementValidator = Validator.rejectIf(String::isEmpty, "element");
+        BiPredicate<String, List<String>> invalid = (value, all) -> value.isEmpty();
+        BiPredicate<String, List<String>> valid = (value, all) -> !value.isEmpty();
 
         assertFailure("element", Validators.eachOf(elementValidator), values);
-        assertFailure("0/2", Validators.eachOf((value, all) -> value.isEmpty(),
+        assertFailure("0/2", Validators.eachRejectIf(invalid,
                 (value, all) -> value.length() + "/" + ((List<?>) all).size()), values);
-        assertFailure("value:", Validators.eachOf((value, all) -> value.isEmpty(),
-                value -> "value:" + value), values);
-        assertFailure("bi-constant", Validators.eachOf((value, all) -> value.isEmpty(), "bi-constant"), values);
-        assertFailure("0/2", Validators.eachOf(String::isEmpty,
+        assertFailure("value:", Validators.eachRejectIf(invalid, value -> "value:" + value), values);
+        assertFailure("reject-constant", Validators.eachRejectIf(invalid, "reject-constant"), values);
+        assertFailure("0/2", Validators.eachRequire(valid,
                 (value, all) -> value.length() + "/" + ((List<?>) all).size()), values);
-        assertFailure("value:", Validators.eachOf(String::isEmpty, value -> "value:" + value), values);
-        assertFailure("constant", Validators.eachOf(String::isEmpty, "constant"), values);
+        assertFailure("value:", Validators.eachRequire(valid, value -> "value:" + value), values);
+        assertFailure("require-constant", Validators.eachRequire(valid, "require-constant"), values);
         assertEquals(Collections.emptyList(), Validators.eachOf(elementValidator).validate(Collections.emptyList()));
-        assertEquals(Collections.singletonList("ok"), Validators.<String, List<String>>eachOf(
-                (value, all) -> value.isEmpty(),
-                (value, all) -> "invalid"
+        assertEquals(Collections.singletonList("ok"), Validators.<String, List<String>>eachRequire(
+                valid, (value, all) -> "invalid"
         ).validate(Collections.singletonList("ok")));
     }
 
@@ -214,21 +260,53 @@ public class ValidatorCompositionTest {
     public void mapFactoriesCoverEveryPredicateAndMessageShape() {
         Function<String, Integer> length = String::length;
         Predicate<Integer> invalidLength = value -> value == 4;
+        Predicate<Integer> validLength = value -> value == 4;
         BiPredicate<Integer, String> invalidPair = (mapped, original) -> mapped == original.length();
+        BiPredicate<Integer, String> validPair = (mapped, original) -> mapped == 4 && original.startsWith("t");
         BiFunction<Integer, String, String> pairMessage = (mapped, original) -> mapped + ":" + original;
 
         assertFailure("mapped-validator", Validators.map(length,
-                Validator.ofPredicate(invalidLength, "mapped-validator")), "test");
-        assertFailure("4:test", Validators.map(length, invalidPair, pairMessage), "test");
-        assertFailure("mapped:4", Validators.map(length, invalidPair, mapped -> "mapped:" + mapped), "test");
-        assertFailure("bi-constant", Validators.map(length, invalidPair, "bi-constant"), "test");
-        assertFailure("4:test", Validators.map(length, invalidLength, pairMessage), "test");
-        assertFailure("mapped:4", Validators.map(length, invalidLength, mapped -> "mapped:" + mapped), "test");
-        assertFailure("predicate-constant", Validators.map(length, invalidLength, "predicate-constant"), "test");
+                Validator.rejectIf(invalidLength, "mapped-validator")), "test");
+        assertFailure("4:test", Validators.mapRejectIf(length, invalidPair, pairMessage), "test");
+        assertFailure("mapped:4", Validators.mapRejectIf(length, invalidPair, mapped -> "mapped:" + mapped), "test");
+        assertFailure("bi-constant", Validators.mapRejectIf(length, invalidPair, "bi-constant"), "test");
+        assertFailure("4:test", Validators.mapRejectIf(length, invalidLength, pairMessage), "test");
+        assertFailure("mapped:4", Validators.mapRejectIf(length, invalidLength, mapped -> "mapped:" + mapped), "test");
+        assertFailure("predicate-constant", Validators.mapRejectIf(length, invalidLength, "predicate-constant"), "test");
+        assertFailure("3:abc", Validators.mapRequire(length, validPair, pairMessage), "abc");
+        assertFailure("mapped:3", Validators.mapRequire(length, validPair, mapped -> "mapped:" + mapped), "abc");
+        assertFailure("bi-required", Validators.mapRequire(length, validPair, "bi-required"), "abc");
+        assertFailure("3:abc", Validators.mapRequire(length, validLength, pairMessage), "abc");
+        assertFailure("mapped:3", Validators.mapRequire(length, validLength, mapped -> "mapped:" + mapped), "abc");
+        assertFailure("predicate-required", Validators.mapRequire(length, validLength, "predicate-required"), "abc");
 
         assertThrows(NullPointerException.class, () -> Validators.map(null, Validator.of()));
         assertThrows(NullPointerException.class, () -> Validators.map(length, (Validator<Integer>) null));
         assertThrows(NullPointerException.class, () -> Validators.ifPresent((Validator<Object>) null));
         assertThrows(NullPointerException.class, () -> Validators.ifNotNullAnd(null, Validator.of()));
+    }
+
+    @Test
+    public void constantMessageFactoriesRejectNullAtConstruction() {
+        BiPredicate<String, List<String>> elementPredicate = (value, values) -> value.isEmpty();
+        BiPredicate<String, List<String>> elementRequirement = (value, values) -> !value.isEmpty();
+        Function<String, Integer> length = String::length;
+        Predicate<Integer> mappedPredicate = value -> value == 4;
+        BiPredicate<Integer, String> mappedBiPredicate = (mapped, original) -> mapped == original.length();
+
+        assertThrows(NullPointerException.class,
+                () -> Validators.<String, List<String>>eachRejectIf(elementPredicate, (String) null));
+        assertThrows(NullPointerException.class,
+                () -> Validators.<String, List<String>>eachRequire(elementRequirement, (String) null));
+        assertThrows(NullPointerException.class, () -> Validators.notNull((String) null));
+        assertThrows(NullPointerException.class, () -> Validators.isNull((String) null));
+        assertThrows(NullPointerException.class,
+                () -> Validators.mapRejectIf(length, mappedBiPredicate, (String) null));
+        assertThrows(NullPointerException.class,
+                () -> Validators.mapRejectIf(length, mappedPredicate, (String) null));
+        assertThrows(NullPointerException.class,
+                () -> Validators.mapRequire(length, mappedBiPredicate, (String) null));
+        assertThrows(NullPointerException.class,
+                () -> Validators.mapRequire(length, mappedPredicate, (String) null));
     }
 }

@@ -25,11 +25,13 @@ import java.util.stream.Collectors;
 import static java.util.Objects.requireNonNull;
 
 /**
- * A collection of class and reflection-related predicates
+ * Non-instantiable utility class containing class and reflection-related predicates.
  */
-public enum Classes {
+public final class Classes {
 
-  ;
+  private Classes() {
+	throw new AssertionError("No instances");
+  }
 
   private static Class<?> valueType(Object value) {
 	requireNonNull(value, "Value must be provided");

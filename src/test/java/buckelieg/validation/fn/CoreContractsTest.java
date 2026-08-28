@@ -16,14 +16,20 @@
 package buckelieg.validation.fn;
 
 import buckelieg.fn.Validator;
+import buckelieg.validation.Classes;
+import buckelieg.validation.Iterables;
 import buckelieg.validation.Maps;
 import buckelieg.validation.Numbers;
 import buckelieg.validation.Predicates;
+import buckelieg.validation.Ranges;
 import buckelieg.validation.Strings;
 import buckelieg.validation.ValidationException;
 import buckelieg.validation.Validators;
 import org.junit.Test;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -33,6 +39,15 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class CoreContractsTest {
+
+    private static void assertUtilityClass(Class<?> type) throws NoSuchMethodException {
+        assertTrue(Modifier.isFinal(type.getModifiers()));
+        Constructor<?> constructor = type.getDeclaredConstructor();
+        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        InvocationTargetException exception = assertThrows(InvocationTargetException.class, constructor::newInstance);
+        assertTrue(exception.getCause() instanceof AssertionError);
+    }
 
     @Test
     public void nullValidatorMessageIsEvaluatedOnlyOnFailure() {
@@ -74,6 +89,41 @@ public class CoreContractsTest {
         root.addException(new ValidationException());
         assertEquals("", root.getMessages());
         assertThrows(NullPointerException.class, () -> root.addException(null));
+    }
+
+    @Test
+    public void allOfRunsEveryValidatorAndAggregatesValidationFailures() {
+        AtomicInteger calls = new AtomicInteger();
+        Validator<String> validator = Validators.allOf(
+                Validator.rejectIf(String::isEmpty, "empty"),
+                Validator.rejectIf(value -> value.length() < 2, "short"),
+                value -> {
+                    calls.incrementAndGet();
+                    return value;
+                }
+        );
+
+        ValidationException exception = assertThrows(ValidationException.class, () -> validator.validate(""));
+        assertEquals(1, calls.get());
+        assertEquals(2, exception.getExceptions().size());
+        assertEquals("empty" + System.lineSeparator() + "short", exception.getMessages());
+
+        assertEquals("valid", validator.validate("valid"));
+        assertEquals(2, calls.get());
+        assertEquals("value", Validators.<String>allOf().validate("value"));
+        assertThrows(NullPointerException.class, () -> Validators.<String>allOf(Validator.of(), null));
+    }
+
+    @Test
+    public void utilityContainersAreFinalAndCannotBeInstantiated() throws Exception {
+        assertUtilityClass(Classes.class);
+        assertUtilityClass(Iterables.class);
+        assertUtilityClass(Maps.class);
+        assertUtilityClass(Numbers.class);
+        assertUtilityClass(Ranges.class);
+        assertUtilityClass(Strings.class);
+        assertUtilityClass(Validators.class);
+        assertUtilityClass(Class.forName("buckelieg.validation.Utils"));
     }
 
     @Test

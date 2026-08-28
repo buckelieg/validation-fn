@@ -29,11 +29,13 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 /**
- * A collection of predicates that are applied to iterables
+ * Non-instantiable utility class containing iterable predicates.
  */
-public enum Iterables {
+public final class Iterables {
 
-    ;
+    private Iterables() {
+        throw new AssertionError("No instances");
+    }
 
     /**
      * Checks any collection of values to be exact of provided size
@@ -143,6 +145,7 @@ public enum Iterables {
      * }</pre>
      *
      * @param predicate a test condition as a {@linkplain Predicate}
+     * @param count     required number of matching elements
      * @param <E>       a collection element type
      * @param <I>       a collection type
      * @return a {@linkplain Predicate} instance

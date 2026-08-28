@@ -26,7 +26,9 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 
 /**
- * A validation exception. Thrown by {@linkplain Validator#validate(Object)} method
+ * A validation exception thrown by {@link Validator#validate(Object)}. An exception may contain nested validation
+ * failures, allowing accumulating validators such as {@link Validators#allOf(Validator[])} to preserve every error.
+ * Use {@link #getMessage()} for this exception's own message and {@link #getMessages()} for the flattened message tree.
  *
  * @see Validator#validate(Object)
  */
@@ -34,7 +36,10 @@ public final class ValidationException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /** This exception's own message, excluding nested failures. */
     private final String message;
+
+    /** Nested validation failures in insertion order. */
     private final List<ValidationException> exceptions = new ArrayList<>();
 
     private static String validateMessage(String message) {
@@ -57,7 +62,7 @@ public final class ValidationException extends RuntimeException {
     }
 
     /**
-     * Creates validation exception with an empty message
+     * Creates an empty aggregate root. Nested failures can be added with {@link #addException(ValidationException)}.
      */
     public ValidationException() {
         super("");
@@ -69,6 +74,13 @@ public final class ValidationException extends RuntimeException {
         return message;
     }
 
+    /**
+     * Adds a nested validation failure.
+     *
+     * @param e nested validation failure
+     * @throws NullPointerException     if the exception is {@code null}
+     * @throws IllegalArgumentException if adding the exception would create a cycle
+     */
     public void addException(ValidationException e) {
         ValidationException exception = requireNonNull(e, "Validation exception must be provided");
         if (exception.contains(this)) throw new IllegalArgumentException("Validation exceptions cannot form a cycle");

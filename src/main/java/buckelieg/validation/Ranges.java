@@ -20,11 +20,13 @@ import java.util.function.Predicate;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Utility class consisting of range-related predicates
+ * Non-instantiable utility class containing range-related predicates.
  */
-public enum Ranges {
+public final class Ranges {
 
-  ;
+  private Ranges() {
+	throw new AssertionError("No instances");
+  }
 
   private static <T extends Number & Comparable<T>> void requireValidRange(T from, T to) {
 	requireNonNull(from, "Range start must be provided");

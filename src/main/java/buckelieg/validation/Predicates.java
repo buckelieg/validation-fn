@@ -31,7 +31,10 @@ import static java.util.stream.Collectors.toList;
  */
 public enum Predicates {
 
+  /** Predicate that always returns {@code true}. */
   TRUE(value -> true),
+
+  /** Predicate that always returns {@code false}. */
   FALSE(value -> false);
 
   private final Predicate<?> predicate;
@@ -40,6 +43,12 @@ public enum Predicates {
 	this.predicate = predicate;
   }
 
+  /**
+   * Returns this constant as a predicate of the requested value type.
+   *
+   * @param <T> value type
+   * @return the constant predicate
+   */
   @SuppressWarnings("unchecked")
   public <T> Predicate<T> predicate() {
 	return (Predicate<T>) predicate;

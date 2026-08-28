@@ -29,11 +29,13 @@ import static buckelieg.validation.Utils.isMeasuredAt;
 import static java.util.Objects.requireNonNull;
 
 /**
- * A collection of string-related predicates
+ * Non-instantiable utility class containing string-related predicates.
  */
-public enum Strings {
+public final class Strings {
 
-    ;
+    private Strings() {
+        throw new AssertionError("No instances");
+    }
 
     private static String[] validatedValues(String... values) {
         requireNonNull(values, "String values must be provided");

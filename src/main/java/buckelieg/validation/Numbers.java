@@ -21,11 +21,13 @@ import java.util.function.Predicate;
 import static buckelieg.validation.Utils.isMeasuredAt;
 
 /**
- * A collection of number-related predicates
+ * Non-instantiable utility class containing number-related predicates.
  */
-public enum Numbers {
+public final class Numbers {
 
-    ;
+    private Numbers() {
+        throw new AssertionError("No instances");
+    }
 
     private static BigDecimal toBigDecimal(Object value) {
         return new BigDecimal(value.toString());
@@ -61,6 +63,7 @@ public enum Numbers {
      * Tests provided number whether it is equal to zero
      *
      * @param value a validated value
+     * @param <N>   value type
      * @return true - if provided value equals to zero, false - otherwise
      * @see BigDecimal#signum()
      */

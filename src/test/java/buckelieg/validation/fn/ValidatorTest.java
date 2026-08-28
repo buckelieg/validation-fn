@@ -21,11 +21,9 @@ import org.junit.Test;
 
 import java.util.Optional;
 
-import static buckelieg.fn.Validator.ofPredicate;
 import static buckelieg.validation.Validators.*;
 import static org.junit.Assert.*;
 
-//TODO write more test cases here...
 public class ValidatorTest {
 
     public static final String NULL_NOR_EMPTY = "stringProperty must not be null nor empty";
@@ -58,8 +56,9 @@ public class ValidatorTest {
     @Test
     public void testSimple() {
         Validator<MyClass> validator = Validator.build(noop -> noop
-                .thenMapIfNotNull(MyClass::getStringProperty, Validators.notNullOr(String::isEmpty, NULL_NOR_EMPTY))
-                .thenMap(MyClass::getNumber, Numbers::isNegative, "Not negative")
+                .thenMapIfNotNull(MyClass::getStringProperty,
+                        Validator.require(value -> value != null && !value.isEmpty(), NULL_NOR_EMPTY))
+                .thenMapRejectIf(MyClass::getNumber, Numbers::isNegative, "Not negative")
         );
         assertEquals(
                 NULL_NOR_EMPTY,
@@ -75,31 +74,31 @@ public class ValidatorTest {
         Address address1 = new Address("MyCity", "MyStreet", 13);
         Address address2 = new Address();
         Validator<Person> validator = Validators.<Person>notNull("Person must be provided")
-                .thenMap(Person::getAge, (age, person) -> false, "")
-                .thenMap(
+                .thenMapRejectIf(Person::getAge, (age, person) -> false, "")
+                .thenMapRejectIf(
                         Person::getFirstName,
                         Strings.isBlank().or(Strings.isLengthLe(6)),
                         value -> String.format("FirstName '%s' must not be null and at least 6 characters long", value)
                 )
                 .thenMap(Person::getSecondName, ifNotNullAnd(Strings.notBlank(),
-                        ofPredicate(Strings.isLengthLe(6), "Minimum second name length is 6")
+                        Validator.rejectIf(Strings.isLengthLe(6), "Minimum second name length is 6")
                 ))
-                .thenMap(Person::getLastName, Strings::isBlank, "Last name must not be empty")
-                .thenMap(
+                .thenMapRejectIf(Person::getLastName, Strings::isBlank, "Last name must not be empty")
+                .thenMapRejectIf(
                         Person::getAge,
                         Numbers.<Integer>isNegative().or(Predicates.ge(100)),
                         "Age has to be greater than 0 and less than 100"
                 )
                 .thenMap(Person::getAddresses, eachOf(Validators.<Address>notNull("Address must not be null")
-                        .thenMap(Address::getCity, Strings::isBlank, "City must not be blank")
-                        .thenMap(Address::getStreet, Strings::isBlank, "Street must not be blank")
-                        .thenMap(Address::getBuildingNumber, Numbers::isNegative, "Build number must be positive")
+                        .thenMapRejectIf(Address::getCity, Strings::isBlank, "City must not be blank")
+                        .thenMapRejectIf(Address::getStreet, Strings::isBlank, "Street must not be blank")
+                        .thenMapRejectIf(Address::getBuildingNumber, Numbers::isNegative, "Build number must be positive")
                 ))
-                .thenMap(Person::getAddresses, eachOf(Validators.<Address>notNull().then(
+                .thenMap(Person::getAddresses, eachOf(Validators.<Address>notNull().thenRejectIf(
                         addr -> Strings.isBlank(addr.getCity()) || Strings.isBlank(addr.getStreet()) || Numbers.isNegative(addr.getBuildingNumber()),
                         addr -> String.format("Address of '%s' must be fully filled in", addr)
                 )))
-                .thenMap(Person::getGender, ifPresent(Strings::isBlank, "Gender must not be blank"));
+                .thenMap(Person::getGender, ifPresent(Validator.rejectIf(Strings::isBlank, "Gender must not be blank")));
 
         Person person1 = new Person("FirstName", "SecondName", "LastName", 76);
         Person person2 = new Person("FirstName", "SecondName", "LastName", 76, address1);

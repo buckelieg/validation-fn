@@ -32,9 +32,14 @@ import java.util.stream.StreamSupport;
 
 import static java.util.Objects.requireNonNull;
 
-enum Utils {
+/**
+ * Internal non-instantiable utility class shared by predicate factories.
+ */
+final class Utils {
 
-    ;
+    private Utils() {
+        throw new AssertionError("No instances");
+    }
 
     /**
      * Taken from here: <a href="https://stackoverflow.com/a/47181151">stackoverflow</a>

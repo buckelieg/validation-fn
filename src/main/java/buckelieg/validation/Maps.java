@@ -22,11 +22,13 @@ import java.util.function.Predicate;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Utility class consisting of map-related predicates
+ * Non-instantiable utility class containing map-related predicates.
  */
-public enum Maps {
+public final class Maps {
 
-    ;
+    private Maps() {
+        throw new AssertionError("No instances");
+    }
 
     /**
      * Checks if this map contains provided key
@@ -69,6 +71,7 @@ public enum Maps {
     /**
      * Checks if this map has size of provided one
      *
+     * @param size required map size
      * @param <K> key type
      * @param <V> value type
      * @return a {@linkplain Predicate} instance
