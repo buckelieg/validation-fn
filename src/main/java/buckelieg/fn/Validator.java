@@ -346,8 +346,7 @@ public interface Validator<T> {
      * @return a composite validator that returns the original value on success
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapRejectIf(Function<T, R> valueMapper, BiPredicate<R, T> predicate,
-                                             BiFunction<R, T, String> messageSupplier) {
+    default <R> Validator<T> thenMapRejectIf(Function<T, R> valueMapper, BiPredicate<R, T> predicate, BiFunction<R, T, String> messageSupplier) {
         return then(Validators.mapRejectIf(valueMapper, predicate, messageSupplier));
     }
 
@@ -361,8 +360,7 @@ public interface Validator<T> {
      * @return a composite validator that returns the original value on success
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapRejectIf(Function<T, R> valueMapper, BiPredicate<R, T> predicate,
-                                             Function<R, String> messageSupplier) {
+    default <R> Validator<T> thenMapRejectIf(Function<T, R> valueMapper, BiPredicate<R, T> predicate, Function<R, String> messageSupplier) {
         return then(Validators.mapRejectIf(valueMapper, predicate, messageSupplier));
     }
 
@@ -376,8 +374,7 @@ public interface Validator<T> {
      * @return a composite validator that returns the original value on success
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapRejectIf(Function<T, R> valueMapper, BiPredicate<R, T> predicate,
-                                             String errorMessage) {
+    default <R> Validator<T> thenMapRejectIf(Function<T, R> valueMapper, BiPredicate<R, T> predicate, String errorMessage) {
         return then(Validators.mapRejectIf(valueMapper, predicate, errorMessage));
     }
 
@@ -391,8 +388,7 @@ public interface Validator<T> {
      * @return a composite validator that returns the original value on success
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapRejectIf(Function<T, R> valueMapper, Predicate<R> predicate,
-                                             BiFunction<R, T, String> messageSupplier) {
+    default <R> Validator<T> thenMapRejectIf(Function<T, R> valueMapper, Predicate<R> predicate, BiFunction<R, T, String> messageSupplier) {
         return then(Validators.mapRejectIf(valueMapper, predicate, messageSupplier));
     }
 
@@ -406,8 +402,7 @@ public interface Validator<T> {
      * @return a composite validator that returns the original value on success
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapRejectIf(Function<T, R> valueMapper, Predicate<R> predicate,
-                                             Function<R, String> messageSupplier) {
+    default <R> Validator<T> thenMapRejectIf(Function<T, R> valueMapper, Predicate<R> predicate, Function<R, String> messageSupplier) {
         return then(Validators.mapRejectIf(valueMapper, predicate, messageSupplier));
     }
 
@@ -421,8 +416,7 @@ public interface Validator<T> {
      * @return a composite validator that returns the original value on success
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapRejectIf(Function<T, R> valueMapper, Predicate<R> predicate,
-                                             String errorMessage) {
+    default <R> Validator<T> thenMapRejectIf(Function<T, R> valueMapper, Predicate<R> predicate, String errorMessage) {
         return then(Validators.mapRejectIf(valueMapper, predicate, errorMessage));
     }
 
@@ -436,8 +430,7 @@ public interface Validator<T> {
      * @return a composite validator that returns the original value on success
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapRequire(Function<T, R> valueMapper, BiPredicate<R, T> predicate,
-                                            BiFunction<R, T, String> messageSupplier) {
+    default <R> Validator<T> thenMapRequire(Function<T, R> valueMapper, BiPredicate<R, T> predicate, BiFunction<R, T, String> messageSupplier) {
         return then(Validators.mapRequire(valueMapper, predicate, messageSupplier));
     }
 
@@ -451,8 +444,7 @@ public interface Validator<T> {
      * @return a composite validator that returns the original value on success
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapRequire(Function<T, R> valueMapper, BiPredicate<R, T> predicate,
-                                            Function<R, String> messageSupplier) {
+    default <R> Validator<T> thenMapRequire(Function<T, R> valueMapper, BiPredicate<R, T> predicate, Function<R, String> messageSupplier) {
         return then(Validators.mapRequire(valueMapper, predicate, messageSupplier));
     }
 
@@ -466,8 +458,7 @@ public interface Validator<T> {
      * @return a composite validator that returns the original value on success
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapRequire(Function<T, R> valueMapper, BiPredicate<R, T> predicate,
-                                            String errorMessage) {
+    default <R> Validator<T> thenMapRequire(Function<T, R> valueMapper, BiPredicate<R, T> predicate, String errorMessage) {
         return then(Validators.mapRequire(valueMapper, predicate, errorMessage));
     }
 
@@ -481,8 +472,7 @@ public interface Validator<T> {
      * @return a composite validator that returns the original value on success
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapRequire(Function<T, R> valueMapper, Predicate<R> predicate,
-                                            BiFunction<R, T, String> messageSupplier) {
+    default <R> Validator<T> thenMapRequire(Function<T, R> valueMapper, Predicate<R> predicate, BiFunction<R, T, String> messageSupplier) {
         return then(Validators.mapRequire(valueMapper, predicate, messageSupplier));
     }
 
@@ -496,8 +486,7 @@ public interface Validator<T> {
      * @return a composite validator that returns the original value on success
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapRequire(Function<T, R> valueMapper, Predicate<R> predicate,
-                                            Function<R, String> messageSupplier) {
+    default <R> Validator<T> thenMapRequire(Function<T, R> valueMapper, Predicate<R> predicate, Function<R, String> messageSupplier) {
         return then(Validators.mapRequire(valueMapper, predicate, messageSupplier));
     }
 
@@ -511,8 +500,7 @@ public interface Validator<T> {
      * @return a composite validator that returns the original value on success
      * @throws NullPointerException if any argument is null
      */
-    default <R> Validator<T> thenMapRequire(Function<T, R> valueMapper, Predicate<R> predicate,
-                                            String errorMessage) {
+    default <R> Validator<T> thenMapRequire(Function<T, R> valueMapper, Predicate<R> predicate, String errorMessage) {
         return then(Validators.mapRequire(valueMapper, predicate, errorMessage));
     }
 
